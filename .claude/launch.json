@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "fuwafuwa-dev",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["VITE_FIREBASE_API_KEY=AIzaDummyKeyForLocalPreview000000000000", "VITE_FIREBASE_AUTH_DOMAIN=demo.firebaseapp.com", "VITE_FIREBASE_PROJECT_ID=demo-project", "VITE_FIREBASE_APP_ID=1:1:web:1", "fuwafuwa-shop/node_modules/.bin/vite", "fuwafuwa-shop", "--port", "5173"],
+      "port": 5173
+    }
+  ]
+}

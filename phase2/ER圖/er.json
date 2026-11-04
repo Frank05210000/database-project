@@ -1,0 +1,973 @@
+{
+ "scale": 1.0,
+ "nodes": [
+  {
+   "id": "user",
+   "kind": "ent",
+   "label": "USER",
+   "x": 0,
+   "y": 22
+  },
+  {
+   "id": "product",
+   "kind": "ent",
+   "label": "PRODUCT",
+   "x": 26,
+   "y": 22
+  },
+  {
+   "id": "disc",
+   "kind": "ent",
+   "label": "DISCOUNT",
+   "x": 12,
+   "y": 16
+  },
+  {
+   "id": "store",
+   "kind": "ent",
+   "label": "STORE",
+   "x": 21,
+   "y": 14.5
+  },
+  {
+   "id": "order",
+   "kind": "ent",
+   "label": "ORDER",
+   "x": 6,
+   "y": 10
+  },
+  {
+   "id": "item",
+   "kind": "weak",
+   "label": "ORDER_ITEM",
+   "x": 26,
+   "y": 10
+  },
+  {
+   "id": "hist",
+   "kind": "weak",
+   "label": "STATUS_HISTORY",
+   "x": -1,
+   "y": 2
+  },
+  {
+   "id": "ret",
+   "kind": "ent",
+   "label": "RETURN_REQUEST",
+   "x": 14,
+   "y": 2
+  },
+  {
+   "id": "set",
+   "kind": "ent",
+   "label": "SYSTEM_SETTING",
+   "x": 28,
+   "y": 1
+  },
+  {
+   "id": "cart",
+   "kind": "rel",
+   "label": "ADDS_TO_CART",
+   "x": 13,
+   "y": 22
+  },
+  {
+   "id": "places",
+   "kind": "rel",
+   "label": "PLACES",
+   "x": 3,
+   "y": 16
+  },
+  {
+   "id": "uses",
+   "kind": "rel",
+   "label": "USES",
+   "x": 9,
+   "y": 13
+  },
+  {
+   "id": "applies",
+   "kind": "rel",
+   "label": "APPLIES_TO",
+   "x": 19,
+   "y": 19
+  },
+  {
+   "id": "reviews",
+   "kind": "rel",
+   "label": "REVIEWS",
+   "x": 13,
+   "y": 12.5
+  },
+  {
+   "id": "sells",
+   "kind": "rel",
+   "label": "SELLS",
+   "x": 24.2,
+   "y": 17.8
+  },
+  {
+   "id": "incl",
+   "kind": "rel",
+   "label": "INCLUDED_IN",
+   "x": 26,
+   "y": 15.6
+  },
+  {
+   "id": "contains",
+   "kind": "idrel",
+   "label": "CONTAINS",
+   "x": 16,
+   "y": 10
+  },
+  {
+   "id": "haslog",
+   "kind": "idrel",
+   "label": "HAS_LOG",
+   "x": 2.5,
+   "y": 6
+  },
+  {
+   "id": "req",
+   "kind": "rel",
+   "label": "REQUESTS",
+   "x": 10,
+   "y": 6
+  },
+  {
+   "id": "rets",
+   "kind": "rel",
+   "label": "RETURNS",
+   "x": 20,
+   "y": 6
+  },
+  {
+   "id": "upd",
+   "kind": "rel",
+   "label": "UPDATES",
+   "x": -1.8,
+   "y": 6
+  },
+  {
+   "id": "proc",
+   "kind": "rel",
+   "label": "PROCESSES",
+   "x": -8,
+   "y": -4
+  },
+  {
+   "id": "user_id",
+   "kind": "key",
+   "label": "user_id",
+   "x": -5,
+   "y": 25.0
+  },
+  {
+   "id": "user_lg",
+   "kind": "attr",
+   "label": "loginid",
+   "x": -5,
+   "y": 24.25
+  },
+  {
+   "id": "user_nm",
+   "kind": "attr",
+   "label": "name",
+   "x": -5,
+   "y": 23.5
+  },
+  {
+   "id": "user_pw",
+   "kind": "attr",
+   "label": "password_hash",
+   "x": -5,
+   "y": 22.75
+  },
+  {
+   "id": "user_em",
+   "kind": "attr",
+   "label": "email",
+   "x": -5,
+   "y": 22.0
+  },
+  {
+   "id": "user_ad",
+   "kind": "attr",
+   "label": "address",
+   "x": -5,
+   "y": 21.25
+  },
+  {
+   "id": "user_ph",
+   "kind": "attr",
+   "label": "phone",
+   "x": -5,
+   "y": 20.5
+  },
+  {
+   "id": "user_ac",
+   "kind": "attr",
+   "label": "is_active",
+   "x": -5,
+   "y": 19.75
+  },
+  {
+   "id": "user_ct",
+   "kind": "attr",
+   "label": "created_at",
+   "x": -5,
+   "y": 19.0
+  },
+  {
+   "id": "user_role",
+   "kind": "multi",
+   "label": "role",
+   "x": 2.6,
+   "y": 24.3
+  },
+  {
+   "id": "cart_q",
+   "kind": "attr",
+   "label": "quantity",
+   "x": 11.6,
+   "y": 23.8
+  },
+  {
+   "id": "cart_t",
+   "kind": "attr",
+   "label": "added_at",
+   "x": 14.6,
+   "y": 23.8
+  },
+  {
+   "id": "product_id",
+   "kind": "key",
+   "label": "product_id",
+   "x": 31.5,
+   "y": 25.4
+  },
+  {
+   "id": "product_nm",
+   "kind": "attr",
+   "label": "name",
+   "x": 31.5,
+   "y": 24.65
+  },
+  {
+   "id": "product_ds",
+   "kind": "attr",
+   "label": "description",
+   "x": 31.5,
+   "y": 23.9
+  },
+  {
+   "id": "product_ca",
+   "kind": "attr",
+   "label": "category",
+   "x": 31.5,
+   "y": 23.15
+  },
+  {
+   "id": "product_im",
+   "kind": "attr",
+   "label": "image_url",
+   "x": 31.5,
+   "y": 22.4
+  },
+  {
+   "id": "product_pr",
+   "kind": "attr",
+   "label": "price",
+   "x": 31.5,
+   "y": 21.65
+  },
+  {
+   "id": "product_sk",
+   "kind": "attr",
+   "label": "stock",
+   "x": 31.5,
+   "y": 20.9
+  },
+  {
+   "id": "product_ls",
+   "kind": "attr",
+   "label": "is_listed",
+   "x": 31.5,
+   "y": 20.15
+  },
+  {
+   "id": "product_ct",
+   "kind": "attr",
+   "label": "created_at",
+   "x": 31.5,
+   "y": 19.4
+  },
+  {
+   "id": "product_ut",
+   "kind": "attr",
+   "label": "updated_at",
+   "x": 31.5,
+   "y": 18.65
+  },
+  {
+   "id": "disc_cd",
+   "kind": "key",
+   "label": "discount_code",
+   "x": 8.6,
+   "y": 18.3
+  },
+  {
+   "id": "disc_ty",
+   "kind": "attr",
+   "label": "discount_type",
+   "x": 8.6,
+   "y": 17.6
+  },
+  {
+   "id": "disc_ds",
+   "kind": "attr",
+   "label": "description",
+   "x": 8.6,
+   "y": 16.9
+  },
+  {
+   "id": "disc_sd",
+   "kind": "attr",
+   "label": "start_date",
+   "x": 8.6,
+   "y": 16.2
+  },
+  {
+   "id": "disc_ed",
+   "kind": "attr",
+   "label": "end_date",
+   "x": 8.6,
+   "y": 15.5
+  },
+  {
+   "id": "disc_rt",
+   "kind": "attr",
+   "label": "rate",
+   "x": 8.6,
+   "y": 14.8
+  },
+  {
+   "id": "disc_ma",
+   "kind": "attr",
+   "label": "min_amount",
+   "x": 8.6,
+   "y": 14.1
+  },
+  {
+   "id": "disc_bq",
+   "kind": "attr",
+   "label": "buy_qty",
+   "x": 10.6,
+   "y": 19.4
+  },
+  {
+   "id": "disc_fq",
+   "kind": "attr",
+   "label": "free_qty",
+   "x": 12.6,
+   "y": 20.1
+  },
+  {
+   "id": "disc_ac",
+   "kind": "attr",
+   "label": "is_active",
+   "x": 14.6,
+   "y": 19.6
+  },
+  {
+   "id": "store_id",
+   "kind": "key",
+   "label": "store_id",
+   "x": 23.6,
+   "y": 15.9
+  },
+  {
+   "id": "store_nm",
+   "kind": "attr",
+   "label": "name",
+   "x": 23.6,
+   "y": 15.2
+  },
+  {
+   "id": "store_ad",
+   "kind": "attr",
+   "label": "address",
+   "x": 23.6,
+   "y": 14.5
+  },
+  {
+   "id": "store_em",
+   "kind": "attr",
+   "label": "email",
+   "x": 23.6,
+   "y": 13.8
+  },
+  {
+   "id": "store_ph",
+   "kind": "attr",
+   "label": "phone",
+   "x": 23.6,
+   "y": 13.1
+  },
+  {
+   "id": "us_a",
+   "kind": "attr",
+   "label": "amount",
+   "x": 6.4,
+   "y": 12.9
+  },
+  {
+   "id": "rv_r",
+   "kind": "attr",
+   "label": "rating",
+   "x": 11.2,
+   "y": 11.1
+  },
+  {
+   "id": "rv_c",
+   "kind": "attr",
+   "label": "comment",
+   "x": 13.4,
+   "y": 10.9
+  },
+  {
+   "id": "rv_t",
+   "kind": "attr",
+   "label": "reviewed_at",
+   "x": 15.9,
+   "y": 11.3
+  },
+  {
+   "id": "order_id",
+   "kind": "key",
+   "label": "order_id",
+   "x": 1.5,
+   "y": 13.0
+  },
+  {
+   "id": "order_tm",
+   "kind": "attr",
+   "label": "order_time",
+   "x": 1.5,
+   "y": 12.25
+  },
+  {
+   "id": "order_pd",
+   "kind": "attr",
+   "label": "paid_at",
+   "x": 1.5,
+   "y": 11.5
+  },
+  {
+   "id": "order_st",
+   "kind": "attr",
+   "label": "status",
+   "x": 1.5,
+   "y": 10.75
+  },
+  {
+   "id": "order_sb",
+   "kind": "attr",
+   "label": "subtotal",
+   "x": 1.5,
+   "y": 10.0
+  },
+  {
+   "id": "order_dt",
+   "kind": "attr",
+   "label": "discount_total",
+   "x": 1.5,
+   "y": 9.25
+  },
+  {
+   "id": "order_tx",
+   "kind": "attr",
+   "label": "tax",
+   "x": 1.5,
+   "y": 8.5
+  },
+  {
+   "id": "order_sf",
+   "kind": "attr",
+   "label": "shipping_fee",
+   "x": 1.5,
+   "y": 7.75
+  },
+  {
+   "id": "order_tt",
+   "kind": "attr",
+   "label": "total",
+   "x": 1.5,
+   "y": 7.0
+  },
+  {
+   "id": "order_rc",
+   "kind": "attr",
+   "label": "recipient",
+   "x": 6,
+   "y": 7.5
+  },
+  {
+   "id": "rc_nm",
+   "kind": "attr",
+   "label": "name",
+   "x": 4.6,
+   "y": 6.3
+  },
+  {
+   "id": "rc_ph",
+   "kind": "attr",
+   "label": "phone",
+   "x": 6.0,
+   "y": 5.8
+  },
+  {
+   "id": "rc_ad",
+   "kind": "attr",
+   "label": "address",
+   "x": 7.4,
+   "y": 6.4
+  },
+  {
+   "id": "item_no",
+   "kind": "pkey",
+   "label": "item_no",
+   "x": 30.5,
+   "y": 12.0
+  },
+  {
+   "id": "item_pn",
+   "kind": "attr",
+   "label": "product_name",
+   "x": 30.5,
+   "y": 11.2
+  },
+  {
+   "id": "item_up",
+   "kind": "attr",
+   "label": "unit_price",
+   "x": 30.5,
+   "y": 10.4
+  },
+  {
+   "id": "item_qt",
+   "kind": "attr",
+   "label": "quantity",
+   "x": 30.5,
+   "y": 9.6
+  },
+  {
+   "id": "item_ev",
+   "kind": "attr",
+   "label": "event_discount",
+   "x": 30.5,
+   "y": 8.8
+  },
+  {
+   "id": "item_ls",
+   "kind": "der",
+   "label": "line_subtotal",
+   "x": 30.5,
+   "y": 8.0
+  },
+  {
+   "id": "h_no",
+   "kind": "pkey",
+   "label": "seq_no",
+   "x": -3.2,
+   "y": 0.4
+  },
+  {
+   "id": "h_st",
+   "kind": "attr",
+   "label": "status",
+   "x": -1,
+   "y": -0.1
+  },
+  {
+   "id": "h_t",
+   "kind": "attr",
+   "label": "changed_at",
+   "x": 1.4,
+   "y": 0.4
+  },
+  {
+   "id": "ret_id",
+   "kind": "key",
+   "label": "return_id",
+   "x": 18.6,
+   "y": 3.5
+  },
+  {
+   "id": "ret_rq",
+   "kind": "attr",
+   "label": "requested_at",
+   "x": 18.6,
+   "y": 2.75
+  },
+  {
+   "id": "ret_rs",
+   "kind": "attr",
+   "label": "reason",
+   "x": 18.6,
+   "y": 2.0
+  },
+  {
+   "id": "ret_st",
+   "kind": "attr",
+   "label": "status",
+   "x": 18.6,
+   "y": 1.25
+  },
+  {
+   "id": "ret_pa",
+   "kind": "attr",
+   "label": "processed_at",
+   "x": 18.6,
+   "y": 0.5
+  },
+  {
+   "id": "ret_rj",
+   "kind": "attr",
+   "label": "reject_reason",
+   "x": 18.6,
+   "y": -0.25
+  },
+  {
+   "id": "ret_rf",
+   "kind": "der",
+   "label": "refund_total",
+   "x": 18.6,
+   "y": -1.0
+  },
+  {
+   "id": "rt_q",
+   "kind": "attr",
+   "label": "return_qty",
+   "x": 22.6,
+   "y": 4.8
+  },
+  {
+   "id": "rt_a",
+   "kind": "attr",
+   "label": "refund_amount",
+   "x": 23.2,
+   "y": 3.9
+  },
+  {
+   "id": "set_k",
+   "kind": "key",
+   "label": "setting_key",
+   "x": 31.8,
+   "y": 2.0
+  },
+  {
+   "id": "set_v",
+   "kind": "attr",
+   "label": "setting_value",
+   "x": 31.8,
+   "y": 1.25
+  },
+  {
+   "id": "set_d",
+   "kind": "attr",
+   "label": "description",
+   "x": 31.8,
+   "y": 0.5
+  }
+ ],
+ "attrs": {
+  "user": [
+   "user_id",
+   "user_lg",
+   "user_nm",
+   "user_pw",
+   "user_em",
+   "user_ad",
+   "user_ph",
+   "user_ac",
+   "user_ct",
+   "user_role"
+  ],
+  "cart": [
+   "cart_q",
+   "cart_t"
+  ],
+  "product": [
+   "product_id",
+   "product_nm",
+   "product_ds",
+   "product_ca",
+   "product_im",
+   "product_pr",
+   "product_sk",
+   "product_ls",
+   "product_ct",
+   "product_ut"
+  ],
+  "disc": [
+   "disc_cd",
+   "disc_ty",
+   "disc_ds",
+   "disc_sd",
+   "disc_ed",
+   "disc_rt",
+   "disc_ma",
+   "disc_bq",
+   "disc_fq",
+   "disc_ac"
+  ],
+  "store": [
+   "store_id",
+   "store_nm",
+   "store_ad",
+   "store_em",
+   "store_ph"
+  ],
+  "uses": [
+   "us_a"
+  ],
+  "reviews": [
+   "rv_r",
+   "rv_c",
+   "rv_t"
+  ],
+  "order": [
+   "order_id",
+   "order_tm",
+   "order_pd",
+   "order_st",
+   "order_sb",
+   "order_dt",
+   "order_tx",
+   "order_sf",
+   "order_tt",
+   "order_rc"
+  ],
+  "order_rc": [
+   "rc_nm",
+   "rc_ph",
+   "rc_ad"
+  ],
+  "item": [
+   "item_no",
+   "item_pn",
+   "item_up",
+   "item_qt",
+   "item_ev",
+   "item_ls"
+  ],
+  "hist": [
+   "h_no",
+   "h_st",
+   "h_t"
+  ],
+  "ret": [
+   "ret_id",
+   "ret_rq",
+   "ret_rs",
+   "ret_st",
+   "ret_pa",
+   "ret_rj",
+   "ret_rf"
+  ],
+  "rets": [
+   "rt_q",
+   "rt_a"
+  ],
+  "set": [
+   "set_k",
+   "set_v",
+   "set_d"
+  ]
+ },
+ "rels": [
+  {
+   "from": "user",
+   "to": "cart",
+   "total": false,
+   "card": "M",
+   "pos": 0.2
+  },
+  {
+   "from": "product",
+   "to": "cart",
+   "total": false,
+   "card": "N",
+   "pos": 0.2
+  },
+  {
+   "from": "user",
+   "to": "places",
+   "total": false,
+   "card": "1",
+   "pos": 0.22
+  },
+  {
+   "from": "order",
+   "to": "places",
+   "total": true,
+   "card": "N",
+   "pos": 0.22
+  },
+  {
+   "from": "order",
+   "to": "uses",
+   "total": false,
+   "card": "M",
+   "pos": 0.35
+  },
+  {
+   "from": "disc",
+   "to": "uses",
+   "total": false,
+   "card": "N",
+   "pos": 0.35
+  },
+  {
+   "from": "disc",
+   "to": "applies",
+   "total": false,
+   "card": "M",
+   "pos": 0.2
+  },
+  {
+   "from": "product",
+   "to": "applies",
+   "total": false,
+   "card": "N",
+   "pos": 0.2
+  },
+  {
+   "from": "order",
+   "to": "reviews",
+   "total": false,
+   "card": "M",
+   "pos": 0.2
+  },
+  {
+   "from": "store",
+   "to": "reviews",
+   "total": false,
+   "card": "N",
+   "pos": 0.2
+  },
+  {
+   "from": "store",
+   "to": "sells",
+   "total": false,
+   "card": "1",
+   "pos": 0.33
+  },
+  {
+   "from": "product",
+   "to": "sells",
+   "total": true,
+   "card": "N",
+   "pos": 0.33
+  },
+  {
+   "from": "product",
+   "to": "incl",
+   "total": false,
+   "card": "1",
+   "pos": 0.23
+  },
+  {
+   "from": "item",
+   "to": "incl",
+   "total": true,
+   "card": "N",
+   "pos": 0.27
+  },
+  {
+   "from": "order",
+   "to": "contains",
+   "total": true,
+   "card": "1",
+   "pos": 0.2
+  },
+  {
+   "from": "item",
+   "to": "contains",
+   "total": true,
+   "card": "N",
+   "pos": 0.2
+  },
+  {
+   "from": "order",
+   "to": "haslog",
+   "total": true,
+   "card": "1",
+   "pos": 0.28
+  },
+  {
+   "from": "hist",
+   "to": "haslog",
+   "total": true,
+   "card": "N",
+   "pos": 0.28
+  },
+  {
+   "from": "order",
+   "to": "req",
+   "total": false,
+   "card": "1",
+   "pos": 0.27
+  },
+  {
+   "from": "ret",
+   "to": "req",
+   "total": true,
+   "card": "1",
+   "pos": 0.27
+  },
+  {
+   "from": "ret",
+   "to": "rets",
+   "total": true,
+   "card": "M",
+   "pos": 0.21
+  },
+  {
+   "from": "item",
+   "to": "rets",
+   "total": false,
+   "card": "N",
+   "pos": 0.21
+  },
+  {
+   "from": "user",
+   "to": "upd",
+   "total": false,
+   "card": "1",
+   "pos": 0.2
+  },
+  {
+   "from": "hist",
+   "to": "upd",
+   "total": true,
+   "card": "N",
+   "pos": 0.37
+  },
+  {
+   "from": "user",
+   "to": "proc",
+   "total": false,
+   "card": "1",
+   "pos": 0.2
+  },
+  {
+   "from": "ret",
+   "to": "proc",
+   "total": false,
+   "card": "N",
+   "pos": 0.2
+  }
+ ]
+}

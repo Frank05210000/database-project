@@ -1,0 +1,589 @@
+% e-Shop 概念與邏輯資料庫設計（Phase 2）
+% 編譯：tectonic phase2.tex
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setmainfont{Times New Roman}
+\setmonofont{Menlo}[Scale=0.85]
+\setCJKmainfont{DFKai-SB}[AutoFakeBold=2.5]
+\setCJKmonofont{DFKai-SB}
+\xeCJKsetup{CJKecglue={ }}
+\linespread{1.3}
+
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{xltabular}
+\usepackage{needspace}
+\usepackage{array}
+\usepackage[table]{xcolor}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{pdflscape}
+\usepackage{fancyvrb}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\hypersetup{hypertexnames=false,colorlinks=true,linkcolor=black,urlcolor=blue,citecolor=black}
+\usepackage{xurl}
+
+% ---------- 標題格式（與 Phase 1 SRS 相同） ----------
+\titleformat{\section}{\centering\large\bfseries}{Section \thesection}{1em}{}
+\titleformat{\subsection}{\bfseries}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalfont}{\thesubsubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{0pt}{1.5em}
+\titlespacing*{\subsection}{0pt}{1.2em}{0.5em}
+\titlespacing*{\subsubsection}{0pt}{0.8em}{0.3em}
+
+\renewcommand{\contentsname}{\centering 目錄 (Table of Contents)}
+\renewcommand{\cftsecpresnum}{Section }
+\setlength{\cftsecnumwidth}{5.5em}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsecfont}{\bfseries}
+\renewcommand{\cftsecpagefont}{\bfseries}
+\setlength{\cftsubsecindent}{1.5em}
+\setlength{\cftsubsubsecindent}{3em}
+\setlength{\cftsubsecnumwidth}{2.2em}
+\setlength{\cftsubsubsecnumwidth}{3em}
+
+\renewcommand{\figurename}{圖}
+\renewcommand{\tablename}{表}
+
+\definecolor{headgray}{gray}{0.88}
+\setlist{nosep,leftmargin=2em}
+
+% 屬性／欄位名稱
+\newcommand{\at}[1]{\texttt{\detokenize{#1}}}
+
+% 實體屬性表：屬性｜說明｜備註
+\newenvironment{enttable}{%
+  \small
+  \xltabular{\linewidth}{|>{\raggedright\arraybackslash}p{3.3cm}|X|>{\centering\arraybackslash}p{2.6cm}|}
+  \hline\rowcolor{headgray}\textbf{屬性} & \textbf{說明} & \textbf{備註}\\\hline\endhead
+}{\endxltabular}
+\newcommand{\ar}[3]{\at{#1} & #2 & #3\\\hline}
+
+% 資料表欄位表：欄位｜型態｜限制
+\newenvironment{coltable}{%
+  \small
+  \xltabular{\linewidth}{|>{\raggedright\arraybackslash}p{3.4cm}|>{\raggedright\arraybackslash}p{2.9cm}|X|}
+  \hline\rowcolor{headgray}\textbf{欄位} & \textbf{資料型態} & \textbf{限制}\\\hline\endhead
+}{\endxltabular}
+\newcommand{\cl}[3]{\at{#1} & \at{#2} & #3\\\hline}
+
+\newcommand{\projectname}{FUWA FUWA e-Shop 線上寵物用品商城}
+\newcommand{\projectnameEN}{FUWA FUWA e-Shop}
+\newcommand{\docdate}{10/30/2026}
+
+\begin{document}
+
+% ================= 封面 =================
+\begin{titlepage}
+\centering
+\vspace*{1.5cm}
+{\Large\bfseries \projectname\\[0.3em] (\projectnameEN)\par}
+\vspace{1.5cm}
+{\LARGE\bfseries 概念與邏輯資料庫設計\par}
+\vspace{0.5cm}
+{\Large\bfseries Conceptual and Logical Database Design\par}
+\vspace{0.5cm}
+{\large\bfseries Phase 2\par}
+\vspace{1.2cm}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{ccc}
+\textbf{姓名} & \textbf{學號} & \textbf{E-mail}\\
+徐法恩 & 113370239 & t113370239@ntut.org.tw\\
+魏提安 & 113590032 & t113590032@ntut.org.tw\\
+鄧玉璿 & 113590029 & t113590029@ntut.org.tw\\
+黃柏瑋 & 113590023 & t113590023@ntut.org.tw\\
+陳俊佑 & 113AC1012 & t113AC1012@ntut.org.tw\\
+\end{tabular}
+\vfill
+{\large\bfseries Department of Computer Science \& Information Engineering\\
+National Taipei University of Technology\par}
+\vspace{1cm}
+{\large\bfseries \docdate\par}
+\vspace*{1cm}
+\end{titlepage}
+
+\pagenumbering{roman}
+\setcounter{page}{1}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% ================= Section 1 =================
+\section{簡介 (Introduction)}
+
+這份文件是資料庫專題 Phase 2 的成果，內容是根據 Phase 1 SRS 的資料需求（DR-01～DR-14）與商業規則（BR-01～BR-26）做出的概念設計與邏輯設計，包含兩個部分：
+
+\begin{itemize}
+  \item Section 2：ER Diagram，以及每個實體的屬性與鍵、每個關係的基數（cardinality）與參與限制（participation constraint）說明。
+  \item Section 3：由 ER 圖轉換而來的資料庫 schema，包含 schema 圖、每個資料表的欄位、資料型態、主鍵、外鍵與檢查限制。
+\end{itemize}
+
+ER 圖使用課堂上的 Chen 記號繪製。資料庫依 SRS 的決定使用 PostgreSQL，所以 schema 的資料型態與限制都以 PostgreSQL 的寫法表示。我們把 schema 寫成 SQL（附錄 A）並在 PostgreSQL 上實際建立過一次，用幾筆故意違反規則的資料（例如重複的 loginid、數量為 0、特殊活動折扣期間重疊）確認資料庫會拒絕。
+
+和 Phase 1 相比，需求沒有改變，只在設計時做了幾個決定，在 2.5 節說明。
+
+\clearpage
+% ================= Section 2 =================
+\section{ER Diagram}
+
+\subsection{記號說明 (Notation)}
+
+\begin{xltabular}{\linewidth}{|>{\centering\arraybackslash}p{4.2cm}|>{\raggedright\arraybackslash}X|}
+\caption{ER 圖記號}\\
+\hline\rowcolor{headgray}\textbf{記號} & \textbf{意義}\\\hline\endfirsthead
+\hline\rowcolor{headgray}\textbf{記號} & \textbf{意義}\\\hline\endhead
+矩形 & 實體（entity）\\\hline
+雙線矩形 & 弱實體（weak entity），本設計有 \at{ORDER_ITEM} 與 \at{STATUS_HISTORY}\\\hline
+菱形 & 關係（relationship）\\\hline
+雙線菱形 & 識別關係（identifying relationship），連接弱實體與其擁有者\\\hline
+橢圓 & 屬性\\\hline
+屬性名稱加底線 & 鍵屬性（key attribute）\\\hline
+屬性名稱加虛線底線 & 弱實體的部分鍵（partial key）\\\hline
+雙線橢圓 & 多值屬性（multivalued attribute）\\\hline
+虛線橢圓 & 衍生屬性（derived attribute），不另外儲存，查詢時計算\\\hline
+橢圓再連出橢圓 & 複合屬性（composite attribute）\\\hline
+雙線連線 & 全部參與（total participation），每個實體都必須參與此關係\\\hline
+單線連線 & 部分參與（partial participation）\\\hline
+1、N、M & 基數比（cardinality ratio）\\\hline
+\end{xltabular}
+
+\clearpage
+\subsection{ER 圖}
+
+圖 1 是 e-Shop 的完整 ER 圖，共有 10 個實體（其中 2 個為弱實體）與 13 個關係。可編輯的原始檔為 \at{ER圖/ER.drawio}，可以用 draw.io 開啟。
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\linewidth]{ER圖/ER_drawio.pdf}
+\caption{e-Shop ER Diagram}
+\end{figure}
+
+\clearpage
+\subsection{實體說明 (Entities)}
+
+以下逐一說明每個實體的用途、屬性與鍵。屬性的資料型態放在 Section 3 的 schema 中說明。
+
+\subsubsection{USER（使用者）}
+系統所有的使用者，包含顧客、工作人員與系統管理員。題目要求 loginid 唯一，但 loginid 是使用者自己取的名字，我們另外用系統產生的 \at{user_id} 當主鍵，loginid 則是候選鍵（candidate key）。一位使用者可以同時有多個角色（例如管理員兼工作人員），所以角色設計成多值屬性 \at{role}。
+\begin{enttable}
+\ar{user_id}{使用者編號，系統自動產生}{主鍵}
+\ar{loginid}{登入帳號}{唯一（候選鍵）}
+\ar{name}{姓名}{}
+\ar{password_hash}{以 bcrypt 雜湊後的密碼，不存明文}{}
+\ar{email}{電子郵件}{}
+\ar{address}{地址，結帳時預設帶入收件地址}{}
+\ar{phone}{電話}{}
+\ar{is_active}{帳號是否啟用；管理員停用帳號時改為 false}{}
+\ar{created_at}{帳號建立時間}{}
+\ar{role}{角色：customer、staff、admin，可同時有多個}{多值屬性}
+\end{enttable}
+
+\subsubsection{STORE（商店）}
+販售商品的商店。題目要求「每間商店的暢銷商品」等報表，所以系統有多間商店，每個商品屬於一間商店。
+\begin{enttable}
+\ar{store_id}{商店編號}{主鍵}
+\ar{name}{商店名稱}{}
+\ar{address}{商店地址}{}
+\ar{email}{聯絡 Email}{}
+\ar{phone}{聯絡電話}{}
+\end{enttable}
+
+\subsubsection{PRODUCT（商品）}
+\begin{enttable}
+\ar{product_id}{商品編號}{主鍵}
+\ar{name}{商品名稱}{}
+\ar{description}{商品描述，關鍵字搜尋會搜尋名稱與描述}{}
+\ar{category}{分類，例如貓用品、狗用品}{}
+\ar{image_url}{商品圖片網址}{}
+\ar{price}{目前售價（新台幣元），須大於 0}{}
+\ar{stock}{庫存數量，須為大於或等於 0 的整數}{}
+\ar{is_listed}{是否上架；已被訂單引用的商品不能刪除，只能下架}{}
+\ar{created_at}{上架時間}{}
+\ar{updated_at}{最後修改時間}{}
+\end{enttable}
+
+\subsubsection{ORDER（訂單）}
+顧客確認付款後成立的訂單。金額欄位在付款當下由伺服器計算後存下來，之後折扣政策或稅率改變也不會影響已成立的訂單，所以雖然可以由明細算出，我們仍然把它們當成一般屬性儲存。
+\begin{enttable}
+\ar{order_id}{訂單編號}{主鍵}
+\ar{order_time}{下單時間}{}
+\ar{paid_at}{確認付款時間，判斷折扣是否有效時以此日期為準（BR-14）}{}
+\ar{status}{目前狀態：received、processing、shipping、closed、cancelled、returned}{}
+\ar{subtotal}{商品小計（各明細單價 × 數量的總和）}{}
+\ar{discount_total}{折扣總額（特殊活動 + 季節性 + 運費折扣）}{}
+\ar{tax}{稅額}{}
+\ar{shipping_fee}{運費（符合運費折扣時為 0）}{}
+\ar{total}{訂單總額，計算方式見 BR-09、BR-10}{}
+\ar{recipient}{收件人，由 name、phone、address 組成}{複合屬性}
+\end{enttable}
+
+\subsubsection{ORDER\_ITEM（訂單明細，弱實體）}
+訂單中的每一項商品。明細離開訂單就沒有意義，所以設計成 ORDER 的弱實體，以 \at{order_id} 加上部分鍵 \at{item_no} 識別。明細保存下單當下的品名與單價（BR-08），之後商品改名或改價都不影響。
+\begin{enttable}
+\ar{item_no}{明細序號（同一訂單內 1, 2, 3 …）}{部分鍵}
+\ar{product_name}{下單當下的品名}{}
+\ar{unit_price}{下單當下的單價}{}
+\ar{quantity}{購買數量，須為大於 0 的整數（BR-05）}{}
+\ar{event_discount}{這項商品的特殊活動折抵金額，沒有則為 0}{}
+\ar{line_subtotal}{明細小計 = unit\_price × quantity}{衍生屬性}
+\end{enttable}
+
+\subsubsection{STATUS\_HISTORY（訂單狀態歷程，弱實體）}
+記錄訂單每一次狀態變更，讓顧客可以查看訂單歷程（OMS-F-008），也讓工作人員知道是誰更新的。以 \at{order_id} 加上部分鍵 \at{seq_no} 識別。
+\begin{enttable}
+\ar{seq_no}{同一訂單內的變更序號}{部分鍵}
+\ar{status}{變更後的狀態}{}
+\ar{changed_at}{變更時間}{}
+\end{enttable}
+
+\subsubsection{DISCOUNT（折扣政策）}
+三種折扣共用同一個實體，以 \at{discount_type} 區分。不同類型使用的規則參數不同，用不到的參數為 NULL：運費折扣用 \at{min_amount}，季節性折扣用 \at{rate}，特殊活動折扣用 \at{rate} 或 \at{buy_qty}／\at{free_qty} 其中一種。
+\begin{enttable}
+\ar{discount_code}{折扣代碼，由系統產生，建立後不可修改（BR-18）}{主鍵}
+\ar{discount_type}{shipping、seasonal、special\_event}{}
+\ar{description}{折扣說明}{}
+\ar{start_date}{開始日期（含）}{}
+\ar{end_date}{結束日期（含），須大於或等於開始日期}{}
+\ar{rate}{折扣率，介於 0 與 1 之間，0.05 表示折抵 5\%}{}
+\ar{min_amount}{運費折扣的門檻金額}{}
+\ar{buy_qty}{「買 X 送 Y」的 X}{}
+\ar{free_qty}{「買 X 送 Y」的 Y}{}
+\ar{is_active}{是否啟用；用過的折扣不能刪除，只能停用}{}
+\end{enttable}
+
+\subsubsection{RETURN\_REQUEST（退貨申請）}
+\begin{enttable}
+\ar{return_id}{退貨申請編號}{主鍵}
+\ar{requested_at}{申請時間}{}
+\ar{reason}{退貨原因}{}
+\ar{status}{處理狀態：pending、approved、rejected}{}
+\ar{processed_at}{工作人員處理時間}{}
+\ar{reject_reason}{拒絕原因，只有 rejected 時填寫}{}
+\ar{refund_total}{退款總額 = 各退貨明細退款金額的總和}{衍生屬性}
+\end{enttable}
+
+\subsubsection{SYSTEM\_SETTING（系統參數）}
+存放稅率（5\%）與基本運費（100 元）等參數（BR-22），讓工作人員之後可以調整而不用改程式。它不和其他實體發生關係，計算訂單金額時才讀取。
+\begin{enttable}
+\ar{setting_key}{參數名稱，例如 tax\_rate、base\_shipping\_fee}{主鍵}
+\ar{setting_value}{參數值}{}
+\ar{description}{參數說明}{}
+\end{enttable}
+
+\clearpage
+\subsection{關係說明 (Relationships)}
+
+表 2 列出每個關係的基數與參與限制。「全部參與」表示該實體的每一筆資料都一定參與這個關係，在 ER 圖中以雙線表示。
+
+\begingroup\small
+\begin{xltabular}{\linewidth}{|>{\centering\arraybackslash}p{2.3cm}|>{\centering\arraybackslash}p{3.1cm}|>{\raggedright\arraybackslash}p{3.6cm}|X|}
+\caption{關係、基數與參與限制}\\
+\hline\rowcolor{headgray}\textbf{關係} & \textbf{實體與基數} & \textbf{參與限制} & \textbf{說明}\\\hline\endfirsthead
+\hline\rowcolor{headgray}\textbf{關係} & \textbf{實體與基數} & \textbf{參與限制} & \textbf{說明}\\\hline\endhead
+\at{SELLS} & STORE 1 : N PRODUCT & PRODUCT 全部；STORE 部分 & 每個商品屬於且僅屬於一間商店；一間商店可以販售零到多個商品（BR-03）。\\\hline
+\at{IN_CART} & USER M : N PRODUCT & 兩邊皆部分 & 顧客的購物車。一位顧客可以放多個商品，一個商品可以在多位顧客的購物車中。關係屬性 \at{quantity}（須大於 0）、\at{added_at}。同一顧客的同一商品只有一筆（DR-04）。\\\hline
+\at{PLACES} & USER 1 : N ORDER & ORDER 全部；USER 部分 & 每筆訂單屬於且僅屬於一位顧客（BR-07）；顧客可以沒有訂單，工作人員與管理員也不會下單。\\\hline
+\at{CONTAINS}（識別關係） & ORDER 1 : N ORDER\_ITEM & 兩邊皆全部 & 每筆訂單至少包含一項明細（BR-07）；每筆明細一定屬於一筆訂單。\\\hline
+\at{OF_PRODUCT} & ORDER\_ITEM N : 1 PRODUCT & ORDER\_ITEM 全部；PRODUCT 部分 & 每筆明細對應一個商品，用於報表依商品、商店統計；商品可以從未被購買。同一訂單中同一商品只有一筆明細。\\\hline
+\at{HAS_LOG}（識別關係） & ORDER 1 : N STATUS\_HISTORY & 兩邊皆全部 & 訂單成立時就會寫入第一筆 received 紀錄，所以每筆訂單至少有一筆歷程。\\\hline
+\at{CHANGED_BY} & USER 1 : N STATUS\_HISTORY & STATUS\_HISTORY 全部；USER 部分 & 每次狀態變更都記錄操作者：received 與 cancelled 由顧客觸發，其餘由工作人員更新。\\\hline
+\at{USES} & ORDER M : N DISCOUNT & 兩邊皆部分 & 訂單實際套用的折扣，關係屬性 \at{amount} 記錄該折扣折抵的金額。三種折扣可同時套用於同一筆訂單（BR-11）；訂單可以沒有折扣，折扣也可以從未被使用。\\\hline
+\at{APPLIES_TO} & DISCOUNT M : N PRODUCT & 兩邊皆部分 & 特殊活動折扣適用的商品。只有 special\_event 類型的折扣會參與；同一商品的特殊活動折扣期間不得重疊（BR-13）。\\\hline
+\at{REQUESTS} & ORDER 1 : 1 RETURN\_REQUEST & RETURN\_REQUEST 全部；ORDER 部分 & 每筆訂單最多只能提出一次退貨申請（BR-25），所以是 1 : 1；大部分訂單不會退貨。\\\hline
+\at{RETURNS} & RETURN\_REQUEST M : N ORDER\_ITEM & RETURN\_REQUEST 全部；ORDER\_ITEM 部分 & 退貨申請要退哪些明細，可以只退部分商品。關係屬性 \at{return_qty}（大於 0 且不超過購買數量）、\at{refund_amount}（核准後依 BR-26 計算）。\\\hline
+\at{PROCESSED_BY} & USER 1 : N RETURN\_REQUEST & 兩邊皆部分 & 處理退貨申請的工作人員；還在 pending 的申請沒有處理者，所以 RETURN\_REQUEST 是部分參與。\\\hline
+\at{REVIEWS}（選配） & ORDER M : N STORE & 兩邊皆部分 & 顧客對已完成訂單中購買過的商店評分，關係屬性 \at{rating}（1～5）、\at{comment}、\at{reviewed_at}。評論者就是訂單的顧客，所以不另外連到 USER；每筆訂單對每間商店最多評價一次（BR-24）。\\\hline
+\end{xltabular}
+\endgroup
+
+\subsection{設計上的決定}
+
+畫 ER 圖時有幾個地方可以有不同畫法，我們的選擇與理由如下：
+
+\begin{enumerate}
+  \item \textbf{角色用多值屬性。}題目說管理員也可以是工作人員，如果在 USER 放單一個 role 欄位就表示不出來。也可以把 CUSTOMER、STAFF、ADMIN 畫成三個子類別，但三者的屬性完全一樣，只差在權限，用多值屬性 \at{role} 比較簡單，轉成資料表後就是一張 \at{user_role}。
+  \item \textbf{訂單明細設計成弱實體，而不是 ORDER 和 PRODUCT 的 M:N 關係。}明細也可以畫成 ORDER 和 PRODUCT 之間的關係，但退貨申請需要指向「某筆訂單的某一項明細」，而關係不能再和其他實體發生關係，所以我們把明細畫成弱實體 ORDER\_ITEM。
+  \item \textbf{特殊活動折扣的期間。}期間屬於 DISCOUNT，但 BR-13 要求「同一商品的期間不重疊」，這個檢查需要商品和期間在同一張表才能用資料庫限制做到。所以轉成資料表時，\at{product_discount} 會複製一份期間，並用複合外鍵確保它和 \at{discount} 的期間一致（見 3.5 節）。
+  \item \textbf{商店評價連到 ORDER 而不是 USER。}BR-24 要求顧客必須有包含該商店商品、且已完成的訂單才能評價，而且每筆訂單對每間商店只能評一次。把評價畫成 ORDER 和 STORE 的關係，主鍵自然就是（訂單, 商店），也不用再另外存顧客。
+  \item \textbf{衍生屬性。}明細小計與退款總額可以直接由其他屬性算出，不另外儲存，以免資料不一致。訂單的金額欄位雖然也算得出來，但它們是付款當下的結果，必須保留，所以仍然儲存。
+\end{enumerate}
+
+\subsection{ER 圖無法表示的限制}
+
+有些商業規則沒辦法畫在 ER 圖上，記錄在這裡，Section 3 會說明怎麼在資料庫中實作：
+
+\begin{itemize}
+  \item 只有具有 customer 角色的使用者可以參與 PLACES 與 IN\_CART；只有 staff 可以參與 PROCESSED\_BY（BR-21）。
+  \item 購買數量不得超過商品目前的庫存，庫存不得為負數（BR-06）。
+  \item 只有 special\_event 類型的折扣可以參與 APPLIES\_TO，且同一商品的期間不能重疊（BR-13）。
+  \item 訂單狀態只能依 received → processing → shipping → closed 前進；cancelled 只能從 received 變過去（BR-19）。
+  \item 退貨數量不得超過購買數量；只有 processing、shipping、closed 的訂單可以申請退貨（BR-25）。
+\end{itemize}
+
+\clearpage
+% ================= Section 3 =================
+\section{資料庫 Schema (Database Schema)}
+
+\subsection{ER 圖轉換為資料表}
+
+我們依課本的 ER-to-Relational mapping 步驟轉換，結果共 15 張資料表。因為 \at{user} 與 \at{order} 是 SQL 的保留字，這兩張表命名為 \at{users} 與 \at{orders}。
+
+\begingroup\small
+\begin{xltabular}{\linewidth}{|>{\raggedright\arraybackslash}p{4.6cm}|>{\raggedright\arraybackslash}p{3.8cm}|X|}
+\caption{ER 元件與資料表的對應}\\
+\hline\rowcolor{headgray}\textbf{轉換規則} & \textbf{ER 元件} & \textbf{產生的資料表}\\\hline\endfirsthead
+\hline\rowcolor{headgray}\textbf{轉換規則} & \textbf{ER 元件} & \textbf{產生的資料表}\\\hline\endhead
+Step 1：一般實體 & USER、STORE、PRODUCT、ORDER、DISCOUNT、RETURN\_REQUEST、SYSTEM\_SETTING & \at{users}、\at{store}、\at{product}、\at{orders}、\at{discount}、\at{return_request}、\at{system_setting}；複合屬性 recipient 拆成三個欄位，衍生屬性不建欄位\\\hline
+Step 2：弱實體 & ORDER\_ITEM、STATUS\_HISTORY & \at{order_item}、\at{order_status_history}，主鍵為擁有者主鍵 + 部分鍵\\\hline
+Step 3：1:1 關係 & REQUESTS & 外鍵 \at{order_id} 放在全部參與的 \at{return_request}，並設為 UNIQUE\\\hline
+Step 4：1:N 關係 & SELLS、PLACES、OF\_PRODUCT、CHANGED\_BY、PROCESSED\_BY & 在 N 端加外鍵：\at{product.store_id}、\at{orders.user_id}、\at{order_item.product_id}、\at{order_status_history.changed_by}、\at{return_request.processed_by}\\\hline
+Step 5：M:N 關係 & IN\_CART、USES、APPLIES\_TO、RETURNS、REVIEWS & \at{cart_item}、\at{order_discount}、\at{product_discount}、\at{return_item}、\at{store_review}，主鍵為兩邊主鍵的組合\\\hline
+Step 6：多值屬性 & USER.role & \at{user_role}，主鍵為（\at{user_id}, \at{role}）\\\hline
+\end{xltabular}
+\endgroup
+
+\subsection{Schema 總覽}
+
+以下是所有資料表，\underline{底線}為主鍵，標 * 的欄位為外鍵（→ 後面是參照的資料表）。
+
+\begingroup\small\sloppy\setlength{\parindent}{0pt}\linespread{1.15}\selectfont
+\newcommand{\pk}[1]{\underline{\at{#1}}}
+\newcommand{\fk}[1]{\at{#1}*}
+\newcommand{\rel}[2]{\par\hangindent=2em\textbf{\at{#1}}(#2)\par\smallskip}
+\rel{users}{\pk{user_id}, \at{loginid}, \at{name}, \at{password_hash}, \at{email}, \at{address}, \at{phone}, \at{is_active}, \at{created_at}}
+\rel{user_role}{\pk{user_id}* → users, \pk{role}}
+\rel{store}{\pk{store_id}, \at{name}, \at{address}, \at{email}, \at{phone}}
+\rel{product}{\pk{product_id}, \fk{store_id} → store, \at{name}, \at{description}, \at{category}, \at{image_url}, \at{price}, \at{stock}, \at{is_listed}, \at{created_at}, \at{updated_at}}
+\rel{cart_item}{\pk{user_id}* → users, \pk{product_id}* → product, \at{quantity}, \at{added_at}}
+\rel{orders}{\pk{order_id}, \fk{user_id} → users, \at{order_time}, \at{recipient_name}, \at{recipient_phone}, \at{recipient_address}, \at{subtotal}, \at{discount_total}, \at{tax}, \at{shipping_fee}, \at{total}, \at{status}, \at{paid_at}}
+\rel{order_item}{\pk{order_id}* → orders, \pk{item_no}, \fk{product_id} → product, \at{product_name}, \at{unit_price}, \at{quantity}, \at{event_discount}}
+\rel{order_status_history}{\pk{order_id}* → orders, \pk{seq_no}, \at{status}, \at{changed_at}, \fk{changed_by} → users}
+\rel{discount}{\pk{discount_code}, \at{discount_type}, \at{description}, \at{start_date}, \at{end_date}, \at{rate}, \at{min_amount}, \at{buy_qty}, \at{free_qty}, \at{is_active}}
+\rel{product_discount}{\pk{product_id}* → product, \pk{discount_code}*, \fk{discount_type}, \fk{start_date}, \fk{end_date}；（\at{discount_code}, \at{discount_type}, \at{start_date}, \at{end_date}）→ discount}
+\rel{order_discount}{\pk{order_id}* → orders, \pk{discount_code}* → discount, \at{amount}}
+\rel{return_request}{\pk{return_id}, \fk{order_id} → orders, \at{requested_at}, \at{reason}, \at{status}, \fk{processed_by} → users, \at{processed_at}, \at{reject_reason}}
+\rel{return_item}{\pk{return_id}*, \fk{order_id}, \pk{item_no}*；（\at{return_id}, \at{order_id}）→ return\_request；（\at{order_id}, \at{item_no}）→ order\_item；\at{return_qty}, \at{refund_amount}}
+\rel{store_review}{\pk{order_id}* → orders, \pk{store_id}* → store, \at{rating}, \at{comment}, \at{reviewed_at}}
+\rel{system_setting}{\pk{setting_key}, \at{setting_value}, \at{description}}
+\endgroup
+
+\begin{landscape}
+\subsection{Schema 圖}
+圖 2 中每個方框是一張資料表，箭頭由外鍵欄位指向被參照的主鍵欄位，標 (FK) 的欄位是外鍵，底線為主鍵。複合外鍵只從第一個欄位畫一條箭頭。
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth,height=0.68\textheight,keepaspectratio]{schema圖/schema_diagram.pdf}
+\caption{e-Shop 關聯式 Schema 圖}
+\end{figure}
+\end{landscape}
+
+\subsection{資料表欄位說明}
+
+金額一律以新台幣「元」為單位，用 \at{NUMERIC(10,0)} 存整數；折扣率用 \at{NUMERIC(4,3)}。編號類主鍵用 \at{SERIAL}（自動遞增整數），折扣代碼由系統產生字串，所以用 \at{VARCHAR}。
+
+\needspace{6\baselineskip}\textbf{users}
+\begin{coltable}
+\cl{user_id}{SERIAL}{PK}
+\cl{loginid}{VARCHAR(30)}{NOT NULL, UNIQUE}
+\cl{name}{VARCHAR(50)}{NOT NULL}
+\cl{password_hash}{VARCHAR(100)}{NOT NULL}
+\cl{email}{VARCHAR(100)}{NOT NULL}
+\cl{address}{VARCHAR(200)}{}
+\cl{phone}{VARCHAR(20)}{}
+\cl{is_active}{BOOLEAN}{NOT NULL, DEFAULT TRUE}
+\cl{created_at}{TIMESTAMP}{NOT NULL, DEFAULT now()}
+\end{coltable}
+
+\needspace{5\baselineskip}\textbf{user\_role}
+\begin{coltable}
+\cl{user_id}{INT}{PK, FK → users，ON DELETE CASCADE}
+\cl{role}{VARCHAR(10)}{PK, CHECK (role IN ('customer', 'staff', 'admin'))}
+\end{coltable}
+
+\needspace{6\baselineskip}\textbf{store}
+\begin{coltable}
+\cl{store_id}{SERIAL}{PK}
+\cl{name}{VARCHAR(50)}{NOT NULL}
+\cl{address}{VARCHAR(200)}{NOT NULL}
+\cl{email}{VARCHAR(100)}{NOT NULL}
+\cl{phone}{VARCHAR(20)}{NOT NULL}
+\end{coltable}
+
+\needspace{6\baselineskip}\textbf{product}
+\begin{coltable}
+\cl{product_id}{SERIAL}{PK}
+\cl{store_id}{INT}{NOT NULL, FK → store}
+\cl{name}{VARCHAR(100)}{NOT NULL}
+\cl{description}{TEXT}{}
+\cl{category}{VARCHAR(30)}{}
+\cl{image_url}{VARCHAR(300)}{}
+\cl{price}{NUMERIC(10,0)}{NOT NULL, CHECK (price > 0)}
+\cl{stock}{INT}{NOT NULL, CHECK (stock >= 0)}
+\cl{is_listed}{BOOLEAN}{NOT NULL, DEFAULT TRUE}
+\cl{created_at}{TIMESTAMP}{NOT NULL, DEFAULT now()}
+\cl{updated_at}{TIMESTAMP}{NOT NULL, DEFAULT now()}
+\end{coltable}
+
+\needspace{6\baselineskip}\textbf{cart\_item}
+\begin{coltable}
+\cl{user_id}{INT}{PK, FK → users，ON DELETE CASCADE}
+\cl{product_id}{INT}{PK, FK → product，ON DELETE CASCADE}
+\cl{quantity}{INT}{NOT NULL, CHECK (quantity > 0)}
+\cl{added_at}{TIMESTAMP}{NOT NULL, DEFAULT now()}
+\end{coltable}
+
+\needspace{6\baselineskip}\textbf{orders}
+\begin{coltable}
+\cl{order_id}{SERIAL}{PK}
+\cl{user_id}{INT}{NOT NULL, FK → users}
+\cl{order_time}{TIMESTAMP}{NOT NULL, DEFAULT now()}
+\cl{recipient_name}{VARCHAR(50)}{NOT NULL}
+\cl{recipient_phone}{VARCHAR(20)}{NOT NULL}
+\cl{recipient_address}{VARCHAR(200)}{NOT NULL}
+\cl{subtotal}{NUMERIC(10,0)}{NOT NULL, CHECK (>= 0)}
+\cl{discount_total}{NUMERIC(10,0)}{NOT NULL, DEFAULT 0, CHECK (>= 0)}
+\cl{tax}{NUMERIC(10,0)}{NOT NULL, CHECK (>= 0)}
+\cl{shipping_fee}{NUMERIC(10,0)}{NOT NULL, CHECK (>= 0)}
+\cl{total}{NUMERIC(10,0)}{NOT NULL, CHECK (>= 0)}
+\cl{status}{VARCHAR(10)}{NOT NULL, DEFAULT 'received', CHECK (status IN ('received', 'processing', 'shipping', 'closed', 'cancelled', 'returned'))}
+\cl{paid_at}{TIMESTAMP}{NOT NULL}
+\end{coltable}
+
+\needspace{6\baselineskip}\textbf{order\_item}
+\begin{coltable}
+\cl{order_id}{INT}{PK, FK → orders，ON DELETE CASCADE}
+\cl{item_no}{SMALLINT}{PK, CHECK (item\_no > 0)}
+\cl{product_id}{INT}{NOT NULL, FK → product；UNIQUE (order\_id, product\_id)}
+\cl{product_name}{VARCHAR(100)}{NOT NULL}
+\cl{unit_price}{NUMERIC(10,0)}{NOT NULL, CHECK (unit\_price > 0)}
+\cl{quantity}{INT}{NOT NULL, CHECK (quantity > 0)}
+\cl{event_discount}{NUMERIC(10,0)}{NOT NULL, DEFAULT 0, CHECK (0 <= event\_discount <= unit\_price × quantity)}
+\end{coltable}
+
+\needspace{6\baselineskip}\textbf{order\_status\_history}
+\begin{coltable}
+\cl{order_id}{INT}{PK, FK → orders，ON DELETE CASCADE}
+\cl{seq_no}{SMALLINT}{PK, CHECK (seq\_no > 0)}
+\cl{status}{VARCHAR(10)}{NOT NULL, CHECK（同 orders.status 的六種狀態）}
+\cl{changed_at}{TIMESTAMP}{NOT NULL, DEFAULT now()}
+\cl{changed_by}{INT}{NOT NULL, FK → users}
+\end{coltable}
+
+\needspace{6\baselineskip}\textbf{discount}
+\begin{coltable}
+\cl{discount_code}{VARCHAR(20)}{PK}
+\cl{discount_type}{VARCHAR(15)}{NOT NULL, CHECK (discount\_type IN ('shipping', 'seasonal', 'special\_event'))}
+\cl{description}{VARCHAR(200)}{NOT NULL}
+\cl{start_date}{DATE}{NOT NULL, CHECK (start\_date <= end\_date)}
+\cl{end_date}{DATE}{NOT NULL}
+\cl{rate}{NUMERIC(4,3)}{CHECK (0 < rate < 1)}
+\cl{min_amount}{NUMERIC(10,0)}{CHECK (min\_amount > 0)}
+\cl{buy_qty}{SMALLINT}{CHECK (buy\_qty > 0)}
+\cl{free_qty}{SMALLINT}{CHECK (free\_qty > 0)；buy\_qty 與 free\_qty 必須同時有值或同時為 NULL}
+\cl{is_active}{BOOLEAN}{NOT NULL, DEFAULT TRUE}
+\end{coltable}
+另外有一個表格層級的 CHECK 依類型限制參數（BR-17）：shipping 只能有 \at{min_amount}；seasonal 只能有 \at{rate}；special\_event 必須在 \at{rate} 與 \at{buy_qty}／\at{free_qty} 之中剛好選一種。
+
+\needspace{6\baselineskip}\textbf{product\_discount}
+\begin{coltable}
+\cl{product_id}{INT}{PK, FK → product，ON DELETE CASCADE}
+\cl{discount_code}{VARCHAR(20)}{PK}
+\cl{discount_type}{VARCHAR(15)}{NOT NULL, DEFAULT 'special\_event', CHECK (discount\_type = 'special\_event')}
+\cl{start_date}{DATE}{NOT NULL}
+\cl{end_date}{DATE}{NOT NULL}
+\end{coltable}
+(\at{discount_code}, \at{discount_type}, \at{start_date}, \at{end_date}) 為複合外鍵，參照 \at{discount} 的同名欄位（ON UPDATE CASCADE, ON DELETE CASCADE），並有 EXCLUDE 限制防止同一商品期間重疊，詳見 3.5 節。
+
+\needspace{6\baselineskip}\textbf{order\_discount}
+\begin{coltable}
+\cl{order_id}{INT}{PK, FK → orders，ON DELETE CASCADE}
+\cl{discount_code}{VARCHAR(20)}{PK, FK → discount}
+\cl{amount}{NUMERIC(10,0)}{NOT NULL, CHECK (amount >= 0)}
+\end{coltable}
+
+\needspace{6\baselineskip}\textbf{return\_request}
+\begin{coltable}
+\cl{return_id}{SERIAL}{PK}
+\cl{order_id}{INT}{NOT NULL, UNIQUE, FK → orders}
+\cl{requested_at}{TIMESTAMP}{NOT NULL, DEFAULT now()}
+\cl{reason}{VARCHAR(300)}{NOT NULL}
+\cl{status}{VARCHAR(10)}{NOT NULL, DEFAULT 'pending', CHECK (status IN ('pending', 'approved', 'rejected'))}
+\cl{processed_by}{INT}{FK → users}
+\cl{processed_at}{TIMESTAMP}{}
+\cl{reject_reason}{VARCHAR(300)}{}
+\end{coltable}
+表格層級 CHECK：status 為 pending 時 \at{processed_by}、\at{processed_at} 必須為 NULL，否則必須有值；status 為 rejected 時才必須填 \at{reject_reason}。另外 UNIQUE (\at{return_id}, \at{order_id}) 給 \at{return_item} 的複合外鍵使用。
+
+\needspace{6\baselineskip}\textbf{return\_item}
+\begin{coltable}
+\cl{return_id}{INT}{PK, FK → return\_request（與 order\_id 組成複合外鍵）}
+\cl{order_id}{INT}{NOT NULL, FK（見下方說明）}
+\cl{item_no}{SMALLINT}{PK, FK → order\_item（與 order\_id 組成複合外鍵）}
+\cl{return_qty}{INT}{NOT NULL, CHECK (return\_qty > 0)}
+\cl{refund_amount}{NUMERIC(10,0)}{CHECK (refund\_amount >= 0)，核准前為 NULL}
+\end{coltable}
+\at{order_id} 看起來和 \at{return_request} 重複，但少了它，資料庫就無法確認「退的明細屬於這張申請的訂單」。加上它之後，(\at{return_id}, \at{order_id}) 參照 \at{return_request}、(\at{order_id}, \at{item_no}) 參照 \at{order_item}，兩個外鍵一起保證明細一定屬於同一筆訂單。
+
+\needspace{6\baselineskip}\textbf{store\_review}
+\begin{coltable}
+\cl{order_id}{INT}{PK, FK → orders}
+\cl{store_id}{INT}{PK, FK → store}
+\cl{rating}{SMALLINT}{NOT NULL, CHECK (rating BETWEEN 1 AND 5)}
+\cl{comment}{VARCHAR(500)}{}
+\cl{reviewed_at}{TIMESTAMP}{NOT NULL, DEFAULT now()}
+\end{coltable}
+
+\needspace{6\baselineskip}\textbf{system\_setting}
+\begin{coltable}
+\cl{setting_key}{VARCHAR(30)}{PK}
+\cl{setting_value}{VARCHAR(50)}{NOT NULL}
+\cl{description}{VARCHAR(100)}{}
+\end{coltable}
+
+\subsection{完整性限制的實作方式}
+
+\textbf{參考完整性。}所有外鍵預設為 NO ACTION，也就是被參照的資料不能直接刪除。例如商品已經出現在訂單明細中就刪不掉，只能把 \at{is_listed} 改成 false 下架；用過的折扣與有訂單的顧客也一樣，符合 BR-20。只有「跟著主體一起消失也沒關係」的資料設定 ON DELETE CASCADE，例如使用者的角色與購物車、商品的購物車項目與折扣設定，以及訂單的明細與狀態歷程。
+
+\textbf{特殊活動折扣期間不重疊（BR-13）。}這是最難處理的規則。我們的做法分三步：
+\begin{enumerate}
+  \item \at{product_discount} 存一份折扣期間，並用複合外鍵 (\at{discount_code}, \at{discount_type}, \at{start_date}, \at{end_date}) 參照 \at{discount}，所以期間一定和折扣政策相同；工作人員修改折扣期間時，ON UPDATE CASCADE 會自動同步。
+  \item \at{discount_type} 加上 CHECK 只能是 special\_event，所以運費與季節性折扣不可能被掛到商品上。
+  \item 使用 PostgreSQL 的 EXCLUDE 限制：
+\begin{Verbatim}[fontsize=\small,xleftmargin=1em]
+EXCLUDE USING gist (product_id WITH =,
+                    daterange(start_date, end_date, '[]') WITH &&)
+\end{Verbatim}
+  意思是「同一個 \at{product_id} 的兩筆資料，期間（含首尾兩日）不能有交集」。這個寫法需要先啟用 \at{btree_gist} 擴充套件。
+\end{enumerate}
+
+\textbf{CHECK 與 UNIQUE 直接處理的規則。}BR-01（各種編號唯一）、BR-04（價格大於 0、庫存不為負）、BR-05（數量大於 0）、BR-14（開始日期不晚於結束日期）、BR-15（折扣率介於 0 與 1）、BR-17（各類型的規則參數）、BR-19 的狀態值範圍、BR-24 的評分範圍與每單每店一則評價、BR-25 的每筆訂單只能申請一次退貨，都已經寫在上面的欄位限制中。
+
+\textbf{需要在交易或 trigger 中處理的規則。}以下規則牽涉到其他資料表或資料變化的前後順序，單靠欄位限制做不到，預計在 Phase 3 以 trigger 或後端的交易實作：
+
+\begingroup\small
+\begin{xltabular}{\linewidth}{|>{\centering\arraybackslash}p{1.6cm}|X|>{\raggedright\arraybackslash}p{4.8cm}|}
+\hline\rowcolor{headgray}\textbf{規則} & \textbf{內容} & \textbf{預計做法}\\\hline\endhead
+BR-06 & 購買數量不得超過庫存 & 結帳交易中以 \at{SELECT ... FOR UPDATE} 鎖定商品再扣庫存；\at{stock >= 0} 的 CHECK 是最後一道防線，扣成負數會讓整筆交易失敗\\\hline
+BR-07 & 每筆訂單至少一項明細 & 結帳交易中一起寫入訂單與明細\\\hline
+BR-19 & 狀態只能依序前進 & \at{orders} 的 BEFORE UPDATE trigger 比對新舊狀態，並自動寫入 \at{order_status_history}\\\hline
+BR-21 & 只有顧客能下單、只有工作人員能處理退貨 & trigger 檢查 \at{user_role}，後端 API 也會檢查\\\hline
+BR-24 & 只能評價已完成且買過該店商品的訂單 & \at{store_review} 的 BEFORE INSERT trigger\\\hline
+BR-25 & 退貨數量不超過購買數量；只有特定狀態的訂單能申請 & \at{return_item}、\at{return_request} 的 BEFORE INSERT trigger\\\hline
+\end{xltabular}
+\endgroup
+
+\clearpage
+% ================= Appendix =================
+\section*{Appendix A：建立 Schema 的 SQL}
+\addcontentsline{toc}{section}{Appendix A：建立 Schema 的 SQL}
+
+以下是依本章 schema 寫成的 PostgreSQL DDL（\at{schema.sql}），已在 PostgreSQL 上成功執行。Phase 3 會再加上 trigger 與初始資料。
+
+\VerbatimInput[fontsize=\scriptsize,numbers=left,numbersep=4pt]{schema.sql}
+
+\end{document}

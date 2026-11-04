@@ -1,0 +1,13 @@
+.app {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-cream);
+  overflow: visible;
+}
+
+.app__content {
+  width: 100%;
+}
+

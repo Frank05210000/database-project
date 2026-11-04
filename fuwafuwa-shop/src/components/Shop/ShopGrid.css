@@ -1,0 +1,204 @@
+.shop-grid {
+  width: 100%;
+  background-color: var(--color-white);
+  border: 3px solid var(--color-border-orange);
+  border-bottom: none;
+  border-radius: var(--border-radius-small) var(--border-radius-small) 0 0;
+  padding: var(--spacing-lg) var(--spacing-md) var(--spacing-lg) var(--spacing-md);
+  box-shadow: 0 4px 8px var(--color-shadow);
+  margin-top: 0;
+}
+
+.shop-grid__top-space {
+  width: 100%;
+  height: 80px;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border-radius-large);
+  box-shadow: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 var(--spacing-md);
+}
+
+.shop-grid__header {
+  position: relative;
+  top: auto;
+  left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--spacing-md);
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  height: auto;
+  z-index: auto;
+  bottom: auto;
+}
+
+.shop-grid__filters {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  align-items: center;
+  padding: 0;
+}
+
+.shop-grid__filter-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+
+.shop-grid__filter-btn {
+  background-color: var(--color-white);
+  border: 2px solid var(--color-border-orange);
+  border-bottom: none;
+  border-radius: var(--spacing-sm) var(--spacing-sm) 0 0;
+  padding: var(--spacing-sm);
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-brown);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  max-width: 44px;
+  overflow: hidden;
+}
+
+.shop-grid__filter-btn:hover {
+  background-color: var(--color-bg-light-cream);
+  box-shadow: 0 2px 6px var(--color-shadow);
+}
+
+.shop-grid__filter-btn--active {
+  background-color: var(--color-accent-orange);
+  color: var(--color-white);
+  border-color: var(--color-accent-orange);
+  max-width: 240px;
+  animation: expandButton 0.6s ease-out forwards;
+}
+
+.shop-grid__filter-btn--active:hover {
+  background-color: var(--color-accent-orange);
+}
+
+.shop-grid__title {
+  font-size: 28px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-brown);
+}
+
+.shop-grid__icon {
+  height: 100px;
+  width: auto;
+}
+
+.shop-grid__products {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--spacing-md);
+  padding-bottom: var(--spacing-xl);
+}
+
+.shop-grid__empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background-color: var(--color-bg-cream);
+  border-radius: var(--border-radius-medium);
+  font-size: 18px;
+  color: var(--color-text-brown);
+  gap: var(--spacing-md);
+  opacity: 0.7;
+}
+
+.shop-grid__footer {
+  width: 100%;
+  height: 60px;
+  background-color: var(--color-white);
+  border: 3px solid var(--color-border-orange);
+  border-top: none;
+  border-bottom: none;
+}
+
+.shop-grid__filter-description {
+  font-size: 12px;
+  color: var(--color-text-brown);
+  white-space: nowrap;
+  animation: slideInDown 0.3s ease-out;
+  transform-origin: top;
+}
+
+.shop-grid__filter-text {
+  font-size: 12px;
+  color: var(--color-text-brown);
+  animation: fadeInText 0.6s ease-out 0.2s forwards;
+  opacity: 0;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes expandButton {
+  from {
+    max-width: 44px;
+  }
+  to {
+    max-width: 240px;
+  }
+}
+
+@keyframes fadeInText {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .shop-grid__products {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+  }
+}
