@@ -1,0 +1,12 @@
+fuwa=# \i q4_discount_usage.sql
+ discount_code | discount_type | start_date |  end_date  | used_orders | total_amount 
+---------------+---------------+------------+------------+-------------+--------------
+ EVT-0001      | special_event | 2026-11-01 | 2026-12-31 |           2 |          672
+ SHP-0001      | shipping      | 2026-01-01 | 2026-12-31 |           5 |          500
+ SEA-0001      | seasonal      | 2026-11-01 | 2027-02-28 |           5 |          328
+ SEA-0002      | seasonal      | 2026-11-15 | 2026-11-30 |           3 |          264
+ EVT-0002      | special_event | 2026-11-01 | 2026-12-31 |           2 |          130
+ EVT-0004      | special_event | 2026-10-01 | 2026-12-31 |           1 |           44
+ EVT-0003      | special_event | 2026-06-01 | 2026-06-30 |           0 |            0
+ SEA-0003      | seasonal      | 2026-07-01 | 2026-08-31 |           0 |            0
+(8 rows)

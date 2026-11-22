@@ -1,0 +1,7 @@
+fuwa=# \i q1_store_best_seller.sql
+      store_name      | product_name | sold_qty | revenue 
+----------------------+--------------+----------+---------
+ FUWA FUWA 台中公益店 | 雞肉凍乾零食 |        5 |    1056
+ FUWA FUWA 台北信義店 | 鮭魚主食罐   |       12 |     650
+ FUWA FUWA 高雄左營店 | 溫和洗毛精   |        3 |    1050
+(3 rows)

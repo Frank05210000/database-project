@@ -8,3 +8,9 @@ __pycache__/
 .vercel
 .env*
 *.tsbuildinfo
+
+# final demo video build outputs
+final/video/recordings/
+final/video/work/
+final/video/out/
+final/slides/export/*.png

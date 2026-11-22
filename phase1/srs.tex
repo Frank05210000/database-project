@@ -115,7 +115,7 @@ National Taipei University of Technology\par}
 \section{簡介 (Introduction)}
 
 \subsection{目的 (Purpose)}
-本文件為資料庫系統課程專題 Phase 1 的系統需求規格書，描述「\projectname」（以下簡稱 e-Shop）的系統需求。e-Shop 是一個線上電子商務系統，讓顧客可以在網路上搜尋、選購寵物用品並查詢自己的訂單，讓工作人員可以管理商品、處理訂單、訂定折扣政策並產生銷售報表，讓系統管理員可以管理使用者帳號。
+本文件為資料庫系統課程專題 Phase 1 的系統需求規格書，描述「\projectname」（以下簡稱 e-Shop）的系統需求。e-Shop 是一個線上電子商務系統，讓顧客可以在網路上搜尋、選購寵物用品並查詢自己的訂單，讓工作人員可以管理商品、處理訂單、訂定折扣政策並產生銷售報表，讓平台管理員可以管理使用者帳號、角色與權限。
 
 本專題的重點在資料庫設計，因此本文件除了列出系統功能外，也特別整理系統需要儲存的資料（2.4 節）與商業規則及完整性限制（2.8 節），作為 Phase 2 繪製 ER Diagram 與設計資料庫 schema 的依據。
 
@@ -124,7 +124,7 @@ National Taipei University of Technology\par}
   \item 顧客可以搜尋商品、使用購物車選購商品、結帳並查詢歷史訂單。
   \item 系統於結帳時自動計算小計、稅、運費，並套用運費、季節性與特殊活動三種折扣。
   \item 工作人員可以管理商品與折扣政策、更新訂單狀態，並查看日、週、月銷售報表。
-  \item 系統管理員可以建立與管理使用者帳號。
+  \item 平台管理員可以管理使用者帳號、指派角色與權限，並停用或啟用帳號。
   \item 以關聯式資料庫的主鍵、外鍵、唯一性與檢查約束確保資料的正確性與一致性。
 \end{itemize}
 
@@ -146,7 +146,7 @@ National Taipei University of Technology\par}
 \end{itemize}
 
 \subsection{概觀 (Overview)}
-本系統採用前後端分離的三層式架構。前端以 React 18、TypeScript 與 Vite 開發單頁式網頁應用程式（SPA），包含顧客使用的商店頁面，以及工作人員與管理員使用的後台頁面。後端以 Python 的 FastAPI 框架提供 REST API，透過 SQLAlchemy 存取資料庫。資料庫選用 PostgreSQL，原因是它支援完整的 SQL 標準、交易與各種完整性約束。
+本系統採用前後端分離的三層式架構。前端以 React 18、TypeScript 與 Vite 開發單頁式網頁應用程式（SPA），同一個網站依登入角色顯示三種介面：顧客購物介面、工作人員管理介面與平台管理介面。後端以 Python 的 FastAPI 框架提供 REST API，透過 SQLAlchemy 存取資料庫。資料庫選用 PostgreSQL，原因是它支援完整的 SQL 標準、交易與各種完整性約束。
 
 本文件的組織如下：Section 1 說明文件目的與系統名稱；Section 2 描述系統架構、操作概念、功能性需求、資料需求、非功能性需求、介面需求、其他需求，以及商業規則與完整性限制；最後為名詞解釋、參考資料與附錄。
 
@@ -179,10 +179,10 @@ National Taipei University of Technology\par}
 \subsection{系統描述 (System Description)}
 本系統分為八個子系統：帳號與權限子系統（AAS 1.1.0）負責登入、登出、註冊與角色授權；商品管理子系統（PMS 1.2.0）負責商品搜尋與商品資料的新增、查詢、修改、刪除；購物車子系統（SCS 1.3.0）負責購物車的加入、修改與移除；訂單管理子系統（OMS 1.4.0）負責結帳、確認付款、建立訂單、查詢歷史訂單、更新訂單狀態，以及取消訂單與退貨申請；折扣管理子系統（DMS 1.5.0）負責折扣政策的管理與結帳時的折扣計算；報表統計子系統（RSS 1.6.0）負責日、週、月銷售報表；商店管理子系統（STS 1.7.0）負責商店資料與商店評價；資料庫子系統（DBS 1.8.0）負責所有資料的儲存與完整性限制。
 
-系統有三種使用者：顧客（Customer）、工作人員（Staff）與系統管理員（Administrator）。工作人員與系統管理員的帳號在初始資料庫中就已存在，系統管理員也可以同時具有工作人員身分。未登入的訪客只能瀏覽與搜尋商品。
+系統有三種使用者角色：顧客（Customer）、工作人員（Staff）與平台管理員（Administrator），一位使用者可以同時具有多種角色，例如平台管理員兼任工作人員。初始資料庫中至少有一位平台管理員，工作人員與平台管理員角色由平台管理員指派。未登入的訪客只能瀏覽與搜尋商品，在介面上歸在顧客這一側。目前工作人員可以管理所有商店的資料；讓各商店的工作人員只管理自家商店的獨立權限屬於未來擴充，不在本期範圍內。
 
 \subsubsection{系統架構圖 (System Architecture Diagram)}
-圖 1 為本系統的架構。使用者以瀏覽器開啟前端 SPA，前端以 HTTP(S) 傳送 JSON 格式的 REST API 請求給後端；後端依請求呼叫對應的子系統，再透過 SQLAlchemy 以 SQL 存取 PostgreSQL 資料庫。寄送訂單確認信為選配功能，以虛線表示。
+圖 1 為本系統的架構。使用者以瀏覽器開啟前端 SPA；三種角色使用同一個網站，前端依登入角色顯示顧客購物介面、工作人員管理介面或平台管理介面，不是三套獨立系統。前端以 HTTP(S) 傳送 JSON 格式的 REST API 請求給後端；後端依請求呼叫對應的子系統，再透過 SQLAlchemy 以 SQL 存取 PostgreSQL 資料庫。寄送訂單確認信為選配功能，以虛線表示。
 
 \begin{figure}[htbp]
 \centering
@@ -195,18 +195,18 @@ National Taipei University of Technology\par}
   darr/.style={{Stealth}-{Stealth},thick}
 ]
 % 使用者
-\node[actor] (cus) at (4.3,0) {\textbf{顧客}\\(Customer)};
-\node[actor] (stf) at (9.4,0) {\textbf{工作人員}\\(Staff)};
-\node[actor] (adm) at (13.2,0) {\textbf{系統管理員}\\(Admin)};
+\node[actor] (cus) at (2.9,0) {\textbf{顧客}＋訪客\\(Customer / Guest)};
+\node[actor] (stf) at (7.6,0) {\textbf{工作人員}\\(Staff)};
+\node[actor] (adm) at (12.3,0) {\textbf{平台管理員}\\(Administrator)};
 % 前端
 \draw[rounded corners=3pt,fill=yellow!10] (0,-1.1) rectangle (15.2,-3.3);
-\node[anchor=north west,font=\small\bfseries,align=left] at (0.15,-1.2) {瀏覽器\\(Browser)};
-\node[box,minimum width=3.6cm] (fe1) at (4.3,-2.1) {顧客前台};
-\node[box,minimum width=4.6cm] (fe2) at (11.3,-2.1) {工作人員／管理員後台};
-\node[font=\footnotesize] at (7.6,-2.95) {React 18 + TypeScript + Vite（SPA）};
+\node[box,minimum width=4.2cm] (fe1) at (2.9,-1.95) {顧客購物介面};
+\node[box,minimum width=4.2cm] (fe2) at (7.6,-1.95) {工作人員管理介面};
+\node[box,minimum width=4.2cm] (fe3) at (12.3,-1.95) {平台管理介面};
+\node[font=\footnotesize] at (7.6,-2.95) {瀏覽器（Browser）：同一網站依登入角色顯示，React 18 + TypeScript + Vite（SPA）};
 \draw[arr] (cus) -- (fe1);
-\draw[arr] (stf) -- (stf |- fe2.north);
-\draw[arr] (adm) -- (adm |- fe2.north);
+\draw[arr] (stf) -- (fe2);
+\draw[arr] (adm) -- (fe3);
 % 後端
 \draw[rounded corners=3pt,fill=blue!5] (0,-4.3) rectangle (15.2,-7.5);
 \node[font=\small\bfseries] at (7.6,-4.65) {後端伺服器：FastAPI（REST API）};
@@ -228,7 +228,7 @@ National Taipei University of Technology\par}
 
 \textbf{Scenario 1：訪客操作概念 (Guest Operational Concepts)}
 
-訪客經由 e-Shop 前台瀏覽商品，可以使用商品管理子系統（PMS）以關鍵字搜尋商品、查看商品詳細資料，也可以透過商店管理子系統（STS）查看商店資訊。訪客若要使用購物車或下單，必須先透過帳號與權限子系統（AAS）註冊為顧客並登入。
+訪客經由顧客購物介面瀏覽商品，可以使用商品管理子系統（PMS）以關鍵字搜尋商品、查看商品詳細資料，也可以透過商店管理子系統（STS）查看商店資訊。訪客若要使用購物車或下單，必須先透過帳號與權限子系統（AAS）註冊為顧客並登入。
 
 \textbf{Scenario 2：顧客操作概念 (Customer Operational Concepts)}
 
@@ -236,11 +236,11 @@ National Taipei University of Technology\par}
 
 \textbf{Scenario 3：工作人員操作概念 (Staff Operational Concepts)}
 
-工作人員透過 AAS 登入後進入後台，可以使用 PMS 新增、查詢、修改與刪除商品及庫存；使用 OMS 查詢顧客的訂單，將訂單狀態依序更新為 processing、shipping、closed，並審核顧客的退貨申請；使用 DMS 新增、查詢、修改與刪除運費、季節性與特殊活動三種折扣政策；使用報表統計子系統（RSS）查看各商店的日、週、月銷售報表。
+工作人員透過 AAS 登入後進入工作人員管理介面，可以使用 PMS 新增、查詢、修改與刪除商品及庫存；使用 OMS 查詢顧客的訂單，將訂單狀態依序更新為 processing、shipping、closed，並審核顧客的退貨申請；使用 DMS 新增、查詢、修改與刪除運費、季節性與特殊活動三種折扣政策；使用報表統計子系統（RSS）查看各商店的日、週、月銷售報表。
 
-\textbf{Scenario 4：系統管理員操作概念 (Administrator Operational Concepts)}
+\textbf{Scenario 4：平台管理員操作概念 (Administrator Operational Concepts)}
 
-系統管理員透過 AAS 登入後，可以新增顧客帳號、查詢與修改使用者資料、停用或啟用帳號。若系統管理員同時具有工作人員身分，也可以使用 Scenario 3 的所有功能。
+平台管理員透過 AAS 登入後進入平台管理介面，可以新增使用者帳號、查詢與修改使用者資料、替使用者指派或移除角色（管理角色與權限），以及停用或啟用帳號。若平台管理員同時具有工作人員身分，也可以使用 Scenario 3 的所有功能。
 
 表 1 以使用者故事的形式整理各角色的主要操作。
 
@@ -266,7 +266,7 @@ US-15 & 工作人員 & 身為工作人員，我想新增運費、季節性與特
 US-16 & 工作人員 & 身為工作人員，當我設定的特殊活動折扣期間與同商品既有折扣重疊時，我希望系統拒絕並提示我。\\\hline
 US-17 & 工作人員 & 身為工作人員，我想查看各商店的日、週、月銷售報表（日期、商店名稱、訂單數、銷售總額）。\\\hline
 US-18 & 工作人員 & 身為工作人員，我想查看各商店的暢銷商品與指定期間的購買統計。（選配）\\\hline
-US-19 & 系統管理員 & 身為系統管理員，我想建立與管理使用者帳號，並能停用違規的顧客帳號。\\\hline
+US-19 & 平台管理員 & 身為平台管理員，我想建立與管理使用者帳號、管理使用者的角色與權限，並能停用違規的帳號，以便維持平台正常運作。\\\hline
 \end{xltabular}
 
 \needspace{12\baselineskip}
@@ -276,11 +276,12 @@ US-19 & 系統管理員 & 身為系統管理員，我想建立與管理使用者
 \begin{reqtable}
 \req{AAS-F-001}{使用者可以使用 loginid 與密碼登入系統。}{必要}
 \req{AAS-F-002}{使用者可以登出系統。}{必要}
-\req{AAS-F-003}{系統依使用者角色（顧客、工作人員、系統管理員）授權可使用的功能；一位使用者可以同時具有多種角色，例如系統管理員兼任工作人員。}{必要}
+\req{AAS-F-003}{系統依使用者角色（顧客、工作人員、平台管理員）授權可使用的功能；一位使用者可以同時具有多種角色，例如平台管理員兼任工作人員。}{必要}
 \req{AAS-F-004}{訪客可以自行註冊為顧客，註冊時須填寫 loginid、姓名、密碼、Email 與地址，loginid 不可與既有使用者重複。}{選配}
-\req{AAS-F-005}{系統管理員可以新增顧客帳號。}{必要}
-\req{AAS-F-006}{系統管理員可以查詢與修改使用者的姓名、Email 與地址，並可以停用或啟用顧客帳號。}{必要}
+\req{AAS-F-005}{平台管理員可以新增使用者帳號。}{必要}
+\req{AAS-F-006}{平台管理員可以查詢與修改使用者的姓名、Email 與地址，並可以停用或啟用帳號；平台管理員不能停用自己的帳號。}{必要}
 \req{AAS-F-007}{使用者可以查看與修改自己的個人資料及密碼。}{選配}
+\req{AAS-F-008}{平台管理員可以替使用者指派或移除角色（顧客、工作人員、平台管理員），以管理各使用者可使用的功能；系統至少須保留一位啟用中的平台管理員。}{必要}
 \end{reqtable}
 
 \needspace{8\baselineskip}\textbf{商品管理子系統 (PMS)}
@@ -347,7 +348,7 @@ US-19 & 系統管理員 & 身為系統管理員，我想建立與管理使用者
 \needspace{8\baselineskip}\textbf{商店管理子系統 (STS)}
 \begin{reqtable}
 \req{STS-F-001}{訪客與顧客可以查看商店資訊（名稱、地址、聯絡 Email 與電話）與該商店販售的商品。}{必要}
-\req{STS-F-002}{系統管理員可以修改商店資料。}{選配}
+\req{STS-F-002}{平台管理員可以修改商店資料。}{選配}
 \req{STS-F-003}{顧客可以對已完成（closed）訂單中購買過商品的商店評分（1 至 5 分）並撰寫評論。}{選配}
 \req{STS-F-004}{商店頁面顯示平均評分與評論列表。}{選配}
 \end{reqtable}
@@ -355,7 +356,7 @@ US-19 & 系統管理員 & 身為系統管理員，我想建立與管理使用者
 \needspace{8\baselineskip}\textbf{資料庫子系統 (DBS)}
 \begin{reqtable}
 \req{DBS-F-001}{以關聯式資料庫（PostgreSQL）儲存系統所有資料，並實施 2.8 節的商業規則與完整性限制。}{必要}
-\req{DBS-F-002}{資料庫初始狀態須包含系統管理員、工作人員與商店資料。}{必要}
+\req{DBS-F-002}{資料庫初始狀態須包含平台管理員、工作人員與商店資料。}{必要}
 \end{reqtable}
 
 \subsection{資料需求 (Data Requirements)}
@@ -365,7 +366,7 @@ US-19 & 系統管理員 & 身為系統管理員，我想建立與管理使用者
 \caption{資料需求}\\
 \hline\rowcolor{headgray}\textbf{編號} & \textbf{資料項目} & \textbf{須儲存的資訊}\\\hline\endfirsthead
 \hline\rowcolor{headgray}\textbf{編號} & \textbf{資料項目} & \textbf{須儲存的資訊}\\\hline\endhead
-DR-01 & 使用者 & loginid、姓名、密碼（以雜湊值儲存）、Email、地址、電話、角色（顧客／工作人員／系統管理員，可多重）、帳號是否啟用、建立時間。\\\hline
+DR-01 & 使用者 & loginid、姓名、密碼（以雜湊值儲存）、Email、地址、電話、角色（顧客／工作人員／平台管理員，可多重）、帳號是否啟用、建立時間。\\\hline
 DR-02 & 商店 & storeid、名稱、地址、聯絡 Email、電話。\\\hline
 DR-03 & 商品 & productid、所屬商店、名稱、描述、分類、圖片、價格、庫存數量、是否上架、建立與更新時間。\\\hline
 DR-04 & 購物車 & 顧客、商品、數量、加入時間。每位顧客的同一商品在購物車中只有一筆。\\\hline
@@ -418,7 +419,7 @@ DR-14 & 退貨明細 & 所屬退貨申請、訂單明細（商品）、退貨數
 \req{FES-N-308}{工作人員訂單處理與退貨審核介面}{必要}
 \req{FES-N-309}{工作人員折扣政策管理介面}{必要}
 \req{FES-N-310}{工作人員銷售報表介面}{必要}
-\req{FES-N-311}{系統管理員使用者管理介面}{必要}
+\req{FES-N-311}{平台管理介面：使用者帳號、角色與權限管理，以及停用或啟用帳號}{必要}
 \req{FES-N-312}{商店資訊與評價介面}{選配}
 \req{FES-N-313}{導覽列依使用者角色顯示可用的功能；未授權的頁面無法進入。}{必要}
 \req{FES-N-314}{介面支援繁體中文與英文切換，並支援桌機與手機瀏覽（RWD）。}{選配}
@@ -461,7 +462,7 @@ DR-14 & 退貨明細 & 所屬退貨申請、訂單明細（商品）、退貨數
 \subsubsection{安裝需求 (Installation Requirement)}
 \begin{reqtable}
 \req{FES-N-701}{提供 Docker Compose 設定檔，可一鍵啟動 PostgreSQL 資料庫；亦可改用本機安裝的 PostgreSQL。}{必要}
-\req{FES-N-702}{提供初始資料的匯入方式，安裝後即可得到含工作人員、管理員與商店資料的資料庫。}{必要}
+\req{FES-N-702}{提供初始資料的匯入方式，安裝後即可得到含平台管理員、工作人員與商店資料的資料庫。}{必要}
 \req{FES-N-703}{提供 README，說明安裝相依套件、設定環境變數與啟動前後端的步驟。}{必要}
 \end{reqtable}
 
@@ -480,7 +481,7 @@ DR-14 & 退貨明細 & 所屬退貨申請、訂單明細（商品）、退貨數
 
 \begin{twocol}{編號}{規則描述}
 \row{BR-01}{loginid、productid、storeid、orderid 與折扣代碼皆須唯一。}
-\row{BR-02}{使用者分為顧客、工作人員與系統管理員三種角色，一位使用者可以同時具有多種角色（系統管理員可兼任工作人員）。工作人員與系統管理員的帳號屬於初始資料，系統不提供新增或刪除這兩種帳號的功能。}
+\row{BR-02}{使用者分為顧客、工作人員與平台管理員三種角色，一位使用者可以同時具有多種角色（平台管理員可兼任工作人員）。初始資料庫至少包含一位平台管理員；工作人員與平台管理員角色只能由平台管理員指派或移除，且系統至少須保留一位啟用中的平台管理員。使用者帳號不提供刪除功能，只能停用（BR-20）。目前工作人員可以管理所有商店；各商店獨立管理權限屬於未來擴充。}
 \row{BR-03}{每個商品屬於且僅屬於一間商店；一間商店可以販售零至多個商品。一筆訂單可以包含不同商店的商品。}
 \row{BR-04}{商品價格須大於 0；庫存數量須為大於或等於 0 的整數。}
 \row{BR-05}{每項購買商品的數量必須是大於 0 的整數（購物車與訂單明細皆適用）。}
@@ -499,7 +500,7 @@ DR-14 & 退貨明細 & 所屬退貨申請、訂單明細（商品）、退貨數
 \row{BR-18}{折扣代碼由系統產生並指派，建立後不可修改。}
 \row{BR-19}{訂單狀態只能是 received、processing、shipping、closed、cancelled、returned 其中之一。正常流程只能依 received、processing、shipping、closed 的順序前進，不可跳過或倒退。只有 received 的訂單可以由顧客直接改為 cancelled；returned 只能在工作人員核准退貨申請、且訂單所有商品都已退貨時產生。部分商品退貨的訂單維持原狀態，繼續正常流程。cancelled 與 returned 為最終狀態。}
 \row{BR-20}{已被訂單引用的商品、折扣政策與顧客帳號不可刪除，只能下架或停用，以維持參考完整性。}
-\row{BR-21}{顧客只能存取自己的購物車、訂單與個人資料；只有工作人員可以管理商品、訂單狀態、退貨申請、折扣政策與查看報表；只有系統管理員可以管理使用者帳號。}
+\row{BR-21}{顧客只能存取自己的購物車、訂單與個人資料；只有工作人員可以管理商品、訂單狀態、退貨申請、折扣政策與查看報表；只有平台管理員可以管理使用者帳號、角色與權限。}
 \row{BR-22}{稅率預設為 5\%，基本運費預設為新台幣 100 元，以系統參數儲存。}
 \row{BR-23}{銷售報表中各商店的「銷售總額」以比例分攤計算：每筆訂單的訂單總額，依各商店商品扣除特殊活動折扣後的金額占全部商品的比例分攤給各商店，四捨五入至整數元後加總。「訂單數」為包含該商店商品的訂單筆數。狀態為 cancelled 或 returned 的訂單不計入報表；部分退貨的訂單，從退貨商品所屬商店的銷售總額扣除該項退款金額。}
 \row{BR-24}{（選配）商店評分須為 1 至 5 的整數；顧客須有包含該商店商品且狀態為 closed 的訂單才能評價，每筆訂單對每間商店最多評價一次。}

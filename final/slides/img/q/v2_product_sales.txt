@@ -1,0 +1,14 @@
+fuwa=# \i v2_product_sales.sql
+ product_name |      store_name      | order_count | sold_qty | revenue 
+--------------+----------------------+-------------+----------+---------
+ 鮭魚主食罐   | FUWA FUWA 台北信義店 |           3 |       12 |     650
+ 雞肉凍乾零食 | FUWA FUWA 台中公益店 |           2 |        5 |    1056
+ 羽毛逗貓棒   | FUWA FUWA 台北信義店 |           2 |        5 |     600
+ 溫和洗毛精   | FUWA FUWA 高雄左營店 |           2 |        3 |    1050
+ 彩虹啾啾球   | FUWA FUWA 台北信義店 |           2 |        3 |     540
+ 貓抓板跳台   | FUWA FUWA 台北信義店 |           2 |        2 |    2688
+ 真皮項圈     | FUWA FUWA 高雄左營店 |           2 |        2 |     900
+ 柔順梳毛刷   | FUWA FUWA 台中公益店 |           2 |        2 |     640
+ 豪華寵物籠   | FUWA FUWA 台中公益店 |           1 |        1 |    2800
+ 自動餵食器   | FUWA FUWA 台中公益店 |           1 |        1 |    1890
+(10 rows)

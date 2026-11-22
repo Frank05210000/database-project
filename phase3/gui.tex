@@ -1,0 +1,25 @@
+\newcommand{\guishot}[2]{% {檔名}{說明}
+\begin{figure}[htbp]\centering\includegraphics[width=0.92\linewidth]{img/#1}\caption{#2}\end{figure}}
+
+本節展示系統的核心流程：顧客瀏覽商品、加入購物車並查看訂單，以及工作人員處理訂單。以下截圖為系統以 4.7 節的示範資料啟動後實際操作的畫面；退貨審核、折扣管理、銷售報表與平台管理等其餘功能將在 Phase 4 展示。
+
+\subsubsection*{顧客購物介面}
+
+未登入的訪客也可以瀏覽商品。首頁（圖 \ref{fig:gui_home}）上方列出今天有效的折扣政策，可以依關鍵字、商店與類別搜尋商品；點選商品進入商品頁（圖 \ref{fig:gui_product}）。
+
+\guishot{gui_home.png}{\label{fig:gui_home}首頁：今日優惠、商品搜尋與篩選}
+\guishot{gui_product.png}{\label{fig:gui_product}商品頁}
+
+登入頁（圖 \ref{fig:gui_login}）以帳號與密碼登入，已停用的帳號無法登入。顧客登入後可以把商品加入購物車並調整數量（圖 \ref{fig:gui_cart}），結帳後在「我的訂單」查看所有訂單與消費總額（圖 \ref{fig:gui_my_orders}）；訂單詳情顯示訂單進度與狀態歷程（圖 \ref{fig:gui_order_detail}），狀態歷程即 \at{order_status_history} 中由 trigger 寫入的資料。
+
+\guishot{gui_login.png}{\label{fig:gui_login}登入頁}
+\guishot{gui_cart.png}{\label{fig:gui_cart}購物車（顧客 alice）}
+\guishot{gui_my_orders.png}{\label{fig:gui_my_orders}我的訂單}
+\guishot{gui_order_detail.png}{\label{fig:gui_order_detail}訂單詳情與狀態歷程（訂單 \#5）}
+
+\subsubsection*{工作人員管理介面}
+
+工作人員在訂單管理（圖 \ref{fig:gui_staff_orders}）依狀態、日期與關鍵字查詢訂單，並在訂單詳情（圖 \ref{fig:gui_staff_order_detail}）依 BR-19 的順序推進狀態。圖中訂單 \#10 有待審核的退貨申請，因此依 BR-25 不能推進狀態，畫面上方顯示提示。
+
+\guishot{gui_staff_orders.png}{\label{fig:gui_staff_orders}訂單管理}
+\guishot{gui_staff_order_detail.png}{\label{fig:gui_staff_order_detail}訂單詳情：有待審核退貨時不能推進狀態（BR-25）}

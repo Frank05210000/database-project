@@ -1,0 +1,7 @@
+fuwa=# \i q3_store_rating.sql
+      store_name      | listed_products | review_count | avg_rating 
+----------------------+-----------------+--------------+------------
+ FUWA FUWA 台北信義店 |               5 |            2 |       4.00
+ FUWA FUWA 台中公益店 |               5 |            1 |       4.00
+ FUWA FUWA 高雄左營店 |               4 |            1 |       4.00
+(3 rows)

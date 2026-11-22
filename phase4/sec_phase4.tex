@@ -1,0 +1,142 @@
+% ================= Phase 4 新增內容 =================
+% 標示「待補」的地方需要實作 session 的最終 SQL、示範資料或系統畫面，不可自行編造。
+\newcommand{\todo}[1]{\par\noindent\fbox{\parbox{0.95\linewidth}{\small\textbf{待補：}#1}}\par\medskip}
+\newcommand{\resultimg}[2]{% {檔名}{說明}
+\IfFileExists{img/#1}{\begin{center}\includegraphics[width=0.95\linewidth]{img/#1}\\[-0.3em]{\small #2}\end{center}}{\todo{#2（\texttt{\detokenize{img/#1}}）}}}
+
+% ================= Section 5 =================
+\clearpage
+\section{函數相依與資料庫正規化 (Functional Dependencies and Database Normalization)}
+
+\subsection{函數相依 (Functional Dependencies)}
+
+以下依 Section 4 的 16 張資料表（Phase 3 實作版本）列出每張表的非平凡函數相依。每張圖上方為資料表的屬性，底線為主鍵；下方每條橫線代表一條 FD：粗線連到的屬性是決定者，箭頭指向被決定的屬性；同一張表有多條 FD 時，各條 FD 的直線左右稍微錯開。只有主鍵、沒有其他屬性的表（如 \at{USER_ROLE}）沒有非平凡 FD。
+
+\input{fd_before.tex}
+
+各表 FD 的說明：
+
+\begin{itemize}[itemsep=0.2em]
+  \item \at{USERS} 有兩個候選鍵：\at{user_id} 與 \at{loginid}（UNIQUE），兩者都能決定所有屬性。
+  \item \at{ORDER_ITEM} 的 \at{(order_id, product_id)} 也是候選鍵，因為同一筆訂單中同一商品只有一筆明細（BR-07）。\at{product_name} 與 \at{unit_price} 是下單當下的快照（BR-08），商品之後改名或改價不影響訂單，所以 \at{product_id} $\to$ \at{product_name} 並\textbf{不}成立。
+  \item \at{RETURN_REQUEST} 的 \at{order_id} 為 UNIQUE（每筆訂單只能申請一次退貨，BR-25），所以也是候選鍵。
+  \item \at{ORDERS} 的 FD2：訂單總額依 BR-09 由其他金額欄位算出，\at{total} = \at{subtotal} $-$ \at{discount_total} $+$ \at{tax} $+$ \at{shipping_fee}，因此 \{\at{subtotal}, \at{discount_total}, \at{tax}, \at{shipping_fee}\} $\to$ \at{total}。
+  \item \at{PRODUCT_DISCOUNT} 的 FD2：特殊活動折扣的類型與期間只由折扣代碼決定，\at{discount_code} $\to$ \{\at{discount_type}, \at{start_date}, \at{end_date}\}。
+  \item \at{RETURN_ITEM} 的 FD2：一筆退貨申請只屬於一筆訂單，\at{return_id} $\to$ \at{order_id}。
+\end{itemize}
+
+\subsection{正規化分析 (Normalization)}
+
+\textbf{1NF。}所有資料表的屬性都是單一值：Phase 2 的多值屬性 role 已拆成 \at{USER_ROLE}，複合屬性 recipient 已拆成三個欄位，因此全部符合 1NF。
+
+\textbf{2NF。}2NF 要求每個非主鍵屬性完全相依於整個主鍵，不能只相依於主鍵的一部分。主鍵只有一個欄位的表自然符合；複合主鍵的表中有兩張違反：
+
+\begin{itemize}[itemsep=0.2em]
+  \item \at{PRODUCT_DISCOUNT(product_id, discount_code, discount_type, start_date, end_date)}：\at{discount_type}、\at{start_date}、\at{end_date} 只相依於主鍵的一部分 \at{discount_code}，而且和 \at{DISCOUNT} 表重複。Phase 2 刻意複製這些欄位，好讓 EXCLUDE 限制直接檢查同一商品的期間不重疊（BR-13），並以複合外鍵與 ON UPDATE CASCADE 保持一致。
+  \item \at{RETURN_ITEM(return_id, order_id, item_no, return_qty, refund_amount)}：\at{order_id} 只相依於主鍵的一部分 \at{return_id}，和 \at{RETURN_REQUEST} 重複。Phase 2 保留它，是為了用複合外鍵 \at{(order_id, item_no)} 保證只能退同一筆訂單的明細。
+\end{itemize}
+
+其餘複合主鍵的表（\at{CART_ITEM}、\at{ORDER_ITEM}、\at{ORDER_STATUS_HISTORY}、\at{ORDER_DISCOUNT}、\at{STORE_REVIEW}）的非主鍵屬性都完全相依於整個主鍵。
+
+\textbf{3NF。}3NF 進一步要求非主鍵屬性不能相依於其他非主鍵屬性（不能有遞移相依）。除了上述兩張表之外，\at{ORDERS} 的 FD2 中決定者 \{\at{subtotal}, \at{discount_total}, \at{tax}, \at{shipping_fee}\} 不是超鍵，\at{total} 也不是主屬性，形式上違反 3NF。
+
+其餘資料表的每條 FD 決定者都是候選鍵，因此不只符合 3NF，也符合 BCNF。
+
+\begingroup\small
+\begin{xltabular}{\linewidth}{|>{\raggedright\arraybackslash}p{3.6cm}|>{\centering\arraybackslash}p{1.6cm}|>{\raggedright\arraybackslash}X|}
+\caption{各資料表正規化前的正規形式}\\
+\hline\rowcolor{headgray}\textbf{資料表} & \textbf{正規形式} & \textbf{說明}\\\hline\endfirsthead
+\hline\rowcolor{headgray}\textbf{資料表} & \textbf{正規形式} & \textbf{說明}\\\hline\endhead
+\at{users} & BCNF & 決定者 \at{user_id}、\at{loginid} 皆為候選鍵\\\hline
+\at{user_role} & BCNF & 全鍵（all-key）\\\hline
+\at{store}、\at{product}、\at{discount}、\at{system_setting} & BCNF & 單一主鍵決定所有屬性\\\hline
+\at{cart_item}、\at{order_status_history}、\at{order_discount}、\at{store_review} & BCNF & 複合主鍵決定所有非主鍵屬性\\\hline
+\at{order_item} & BCNF & 決定者 \at{(order_id, item_no)}、\at{(order_id, product_id)} 皆為候選鍵\\\hline
+\at{return_request} & BCNF & 決定者 \at{return_id}、\at{order_id} 皆為候選鍵\\\hline
+\at{orders} & 2NF & FD2 為遞移相依，\at{total} 相依於其他金額欄位\\\hline
+\at{product_discount} & 1NF & \at{discount_code} $\to$ 期間，部分相依\\\hline
+\at{return_item} & 1NF & \at{return_id} $\to$ \at{order_id}，部分相依\\\hline
+\end{xltabular}
+\endgroup
+
+\subsection{正規化後的 Schema (Normalized Schema)}
+
+我們依課本做法把違反 2NF 與 3NF 的三張表拆乾淨，重複或可以算出的資料不再另外儲存：
+
+\begin{enumerate}[itemsep=0.3em]
+  \item \textbf{\at{PRODUCT_DISCOUNT}。}移除 \at{discount_type}、\at{start_date}、\at{end_date}，只保留 \at{(product_id, discount_code)}，期間一律從 \at{DISCOUNT} 讀取。原本靠 EXCLUDE 檢查的 BR-13（同一商品的特殊活動期間不重疊）與「只有特殊活動折扣能套用到商品」改由 trigger 檢查：新增或修改 \at{PRODUCT_DISCOUNT} 時，以及修改 \at{DISCOUNT} 的期間時，都會重新檢查。
+  \item \textbf{\at{RETURN_ITEM}。}因為每筆訂單最多只有一筆退貨申請，\at{order_id} 本身就能識別退貨申請，所以改用 \at{order_id} 取代 \at{return_id}：新的主鍵為 \at{(order_id, item_no)}，並以外鍵 \at{(order_id, item_no)} 參照 \at{ORDER_ITEM}、以外鍵 \at{order_id} 參照 \at{RETURN_REQUEST} 的 \at{order_id}。這樣不需要重複的欄位，仍然可以用外鍵保證只能退同一筆訂單的明細。
+  \item \textbf{\at{ORDERS}。}刪除 \at{total} 欄位。訂單總額一律依 BR-09 由 \at{subtotal} $-$ \at{discount_total} $+$ \at{tax} $+$ \at{shipping_fee} 計算，因為這四個金額都是付款當下儲存的快照，算出來的總額也不會隨之後的折扣或稅率改變。原本 \at{total >= 0} 的 CHECK 改成檢查這個算式；需要總額時查詢檢視表 \at{v_orders}，它在 \at{orders} 的所有欄位外再加上計算出的 \at{total}：
+\begin{Verbatim}[fontsize=\small,xleftmargin=2em]
+CREATE VIEW v_orders AS
+SELECT o.*, o.subtotal - o.discount_total + o.tax + o.shipping_fee AS total
+FROM orders o;
+\end{Verbatim}
+\end{enumerate}
+
+正規化後三張表的函數相依如下，每條 FD 的決定者都是候選鍵，都符合 BCNF；加上其他原本就符合 BCNF 的 12 張表，整個 schema 都達到 BCNF（因此也符合 3NF）：
+
+\input{fd_after.tex}
+
+\subsection{正規化後更新 Schema 的 SQL}
+
+以下為正規化後有變動的部分，完整 SQL 見 4.6 節與 Appendix。
+
+\textbf{ORDERS：}刪除 \at{total}，改以 CHECK 檢查 BR-09 的算式不為負（\at{01_schema.sql}）。
+\VerbatimInput[fontsize=\scriptsize,numbers=left,numbersep=4pt,firstline=67,lastline=85]{sql/01_schema.sql}
+
+\textbf{PRODUCT\_DISCOUNT：}只保留兩個外鍵欄位。
+\VerbatimInput[fontsize=\scriptsize,numbers=left,numbersep=4pt,firstline=133,lastline=139]{sql/01_schema.sql}
+
+\textbf{RETURN\_ITEM：}以 \at{(order_id, item_no)} 為主鍵，分別參照 \at{RETURN_REQUEST} 與 \at{ORDER_ITEM}。
+\VerbatimInput[fontsize=\scriptsize,numbers=left,numbersep=4pt,firstline=164,lastline=172]{sql/01_schema.sql}
+
+\textbf{檢視表 v\_orders：}需要訂單總額時查詢這個檢視表。
+\VerbatimInput[fontsize=\scriptsize,numbers=left,numbersep=4pt,firstline=191,lastline=195]{sql/01_schema.sql}
+
+\textbf{BR-13 trigger：}取代原本的 EXCLUDE 限制（\at{02_triggers.sql}）。新增或修改 \at{product_discount} 時，\at{product_discount_check} 先確認折扣是特殊活動折扣，再檢查同一商品已套用的其他特殊活動折扣期間是否重疊；修改 \at{discount} 的期間時，\at{discount_period_check} 對該折扣套用的每項商品重新檢查。檢查前以 \at{pg_advisory_xact_lock} 鎖住該商品，避免兩筆交易同時寫入而都通過檢查。實際被拒絕的例子見 4.8 節圖 \ref{fig:db8}。
+\VerbatimInput[fontsize=\scriptsize,numbers=left,numbersep=4pt,firstline=234,lastline=285]{sql/02_triggers.sql}
+
+% ================= Section 6 =================
+\clearpage
+\section{資料庫系統的使用 (The Use of the Database System)}
+
+\subsection{系統安裝 (System Installation Description)}
+
+\input{install.tex}
+
+\subsection{系統使用 (The Use of the System)}
+
+\input{gui.tex}
+
+% ================= Section 7 =================
+\clearpage
+\section{資料庫調校建議 (Suggestions of Database Tuning)}
+
+\input{tuning.tex}
+
+% ================= Section 8 =================
+\clearpage
+\section{額外的查詢與檢視表 (Additional Queries and Views)}
+
+\input{queries.tex}
+
+% ================= Section 9 =================
+\clearpage
+\section{結論與未來工作 (Conclusions and Future Work)}
+
+\subsection{結論}
+
+本專題依 Phase 1 的需求分析、Phase 2 的 ER Model 與 Schema，在 PostgreSQL 上實作了 FUWA FUWA e-Shop 的資料庫與網站。資料庫以主鍵、外鍵、UNIQUE、CHECK 與 trigger 實作 26 條商業規則中與資料有關的限制，因此即使繞過網站直接操作資料庫，不合法的資料也會被拒絕。Phase 4 分析各資料表的函數相依並正規化，讓重複的資料只存一份，原本靠重複欄位實作的限制改由 trigger 檢查。
+
+\subsection{未來工作}
+
+\begin{itemize}[itemsep=0.2em]
+  \item 各商店獨立管理權限：目前工作人員可以管理所有商店，未來可讓工作人員只管理自己所屬商店的商品、訂單與報表。
+  \item 串接第三方金流與物流，實際完成付款與退款。
+  \item 商品搜尋改用全文檢索，並加入推薦功能（PMS-F-008）。
+\end{itemize}
+
+\subsection{組員心得與分工}
+
+\todo{每位組員各自撰寫負責的工作與心得（徐法恩、魏提安、鄧玉璿、黃柏瑋、陳俊佑）。}

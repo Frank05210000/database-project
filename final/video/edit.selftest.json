@@ -1,0 +1,7 @@
+{
+  "output": "out/selftest.mp4",
+  "segments": [
+    {"type": "title", "kicker": "Database Systems · Final Demo", "zh": "FUWA FUWA e-Shop", "en": "Pipeline self-test", "duration": 2.5},
+    {"type": "clip", "src": "recordings/_selftest", "speed": 1.0}
+  ]
+}

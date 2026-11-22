@@ -1,5 +1,7 @@
 # FUWA FUWA e-Shop
 
+> 各階段報告、簡報、Demo 影片與製作過程的檔案索引見 [INDEX.md](INDEX.md)。
+
 北科大資料庫系統期末專題：多門市寵物用品電子商店。同一個網站依登入角色顯示**顧客購物介面**、**工作人員管理介面**、**平台管理介面**。
 
 - 前端：React 18 + TypeScript + Vite（`fuwafuwa-shop/`）

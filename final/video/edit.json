@@ -1,0 +1,211 @@
+{
+  "output": "out/FUWA_FUWA_Final_Demo.mp4",
+  "music": null,
+  "music_volume": 0.12,
+  "segments": [
+    {
+      "type": "title",
+      "kicker": "NTUT · Database Systems · Final Demo",
+      "zh": "FUWA FUWA e-Shop",
+      "en": "A multi-store online shopping system",
+      "duration": 4
+    },
+    {
+      "type": "title",
+      "kicker": "Scene 1 · US-01, US-02",
+      "zh": "訪客搜尋與註冊",
+      "en": "Guest search & sign-up",
+      "duration": 2.5
+    },
+    {
+      "type": "clip",
+      "src": "recordings/s01_guest_search",
+      "start": 0,
+      "end": null,
+      "speed": 1.0
+    },
+    {
+      "type": "title",
+      "kicker": "Scene 2 · US-03, US-04",
+      "zh": "登入與購物車",
+      "en": "Login & shopping cart",
+      "duration": 2.5
+    },
+    {
+      "type": "clip",
+      "src": "recordings/s02_cart",
+      "start": 0,
+      "end": null,
+      "speed": 1.0
+    },
+    {
+      "type": "title",
+      "kicker": "Scene 3 · US-05 – US-07",
+      "zh": "結帳與下單",
+      "en": "Checkout & payment",
+      "duration": 2.5
+    },
+    {
+      "type": "clip",
+      "src": "recordings/s03_checkout",
+      "start": 0,
+      "end": null,
+      "speed": 1.0
+    },
+    {
+      "type": "image",
+      "src": "assets/evidence/ev_checkout.png",
+      "duration": 5.5,
+      "subs": [
+        {
+          "start": 0.3,
+          "end": 5.2,
+          "zh": "總額由檢視表 v_orders 計算，不存在訂單表裡",
+          "en": "The total comes from the v_orders view, not a stored column"
+        }
+      ]
+    },
+    {
+      "type": "title",
+      "kicker": "Scene 4 · US-08 – US-11",
+      "zh": "訂單查詢、取消、退貨、評論",
+      "en": "Orders, cancel, return & review",
+      "duration": 2.5
+    },
+    {
+      "type": "clip",
+      "src": "recordings/s04_orders",
+      "start": 0,
+      "end": null,
+      "speed": 1.0
+    },
+    {
+      "type": "title",
+      "kicker": "Scene 5 · US-12",
+      "zh": "工作人員管理商品",
+      "en": "Staff: product management",
+      "duration": 2.5
+    },
+    {
+      "type": "clip",
+      "src": "recordings/s05_staff_products",
+      "start": 0,
+      "end": null,
+      "speed": 1.0
+    },
+    {
+      "type": "title",
+      "kicker": "Scene 6 · US-13, US-14",
+      "zh": "處理訂單與退貨",
+      "en": "Staff: orders & returns",
+      "duration": 2.5
+    },
+    {
+      "type": "clip",
+      "src": "recordings/s06_staff_orders",
+      "start": 0,
+      "end": null,
+      "speed": 1.0
+    },
+    {
+      "type": "image",
+      "src": "assets/evidence/ev_history.png",
+      "duration": 5.5,
+      "subs": [
+        {
+          "start": 0.3,
+          "end": 5.2,
+          "zh": "四筆狀態都是 trigger 自動寫入，誰在何時改的都留下紀錄",
+          "en": "All four rows were written by a trigger, with who and when"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "src": "assets/evidence/ev_returns.png",
+      "duration": 5.5,
+      "subs": [
+        {
+          "start": 0.3,
+          "end": 5.2,
+          "zh": "核准後退款金額寫進 refund_total",
+          "en": "On approval the refund is stored in refund_total"
+        }
+      ]
+    },
+    {
+      "type": "title",
+      "kicker": "Scene 7 · US-15, US-16",
+      "zh": "折扣管理",
+      "en": "Discount management",
+      "duration": 2.5
+    },
+    {
+      "type": "clip",
+      "src": "recordings/s07_discounts",
+      "start": 0,
+      "end": null,
+      "speed": 1.0
+    },
+    {
+      "type": "image",
+      "src": "assets/evidence/ev_br13.png",
+      "duration": 6.5,
+      "subs": [
+        {
+          "start": 0.3,
+          "end": 6.2,
+          "zh": "繞過網頁直接寫 SQL，trigger 一樣會拒絕",
+          "en": "Bypassing the UI, the trigger still rejects it"
+        }
+      ]
+    },
+    {
+      "type": "title",
+      "kicker": "Scene 8 · US-17, US-18",
+      "zh": "銷售報表與熱銷商品",
+      "en": "Sales reports & best sellers",
+      "duration": 2.5
+    },
+    {
+      "type": "clip",
+      "src": "recordings/s08_reports",
+      "start": 0,
+      "end": null,
+      "speed": 1.0
+    },
+    {
+      "type": "title",
+      "kicker": "Scene 9 · US-19",
+      "zh": "平台管理員：帳號與角色",
+      "en": "Admin: accounts & roles",
+      "duration": 2.5
+    },
+    {
+      "type": "clip",
+      "src": "recordings/s09_admin",
+      "start": 0,
+      "end": null,
+      "speed": 1.0
+    },
+    {
+      "type": "image",
+      "src": "assets/evidence/ev_roles.png",
+      "duration": 5.5,
+      "subs": [
+        {
+          "start": 0.3,
+          "end": 5.2,
+          "zh": "新帳號同時有兩個角色；被停用的帳號 is_active = false",
+          "en": "demo_staff has two roles; deactivated users have is_active = false"
+        }
+      ]
+    },
+    {
+      "type": "title",
+      "zh": "感謝觀看",
+      "en": "Thank you for watching",
+      "duration": 3
+    }
+  ]
+}

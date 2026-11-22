@@ -1,0 +1,34 @@
+系統由三個 Docker 容器組成：PostgreSQL 16 資料庫、FastAPI 後端（Python，JWT 登入、SQLAlchemy 存取資料庫）與 React + Vite 前端。資料庫第一次啟動時，會依檔名順序自動執行 \at{db/init/} 中的四個 SQL 檔（即 Appendix 的 SQL）。
+
+\textbf{安裝需求。}安裝 Docker Desktop 即可，不需要另外安裝 PostgreSQL、Python 或 Node.js。
+
+\textbf{啟動步驟。}在專案根目錄執行：
+\begin{Verbatim}[fontsize=\small,xleftmargin=2em]
+./start.sh            # 等同 docker compose up --build
+./start.sh reset      # 清空資料庫，重新執行 db/init/*.sql
+./start.sh down       # 停止所有容器
+\end{Verbatim}
+
+\begingroup\small
+\begin{xltabular}{\linewidth}{|>{\raggedright\arraybackslash}p{4cm}|>{\raggedright\arraybackslash}X|}
+\caption{系統服務與網址}\\
+\hline\rowcolor{headgray}\textbf{服務} & \textbf{網址}\\\hline\endhead
+網站（三種介面） & \texttt{http://localhost:5173}\\\hline
+後端 API 文件（Swagger） & \texttt{http://localhost:8001/docs}\\\hline
+PostgreSQL & \texttt{localhost:5433}，帳號、密碼、資料庫名稱皆為 \texttt{fuwa}\\\hline
+\end{xltabular}
+\endgroup
+
+\textbf{示範帳號。}\at{03_seed.sql} 建立了以下帳號，登入後依角色進入不同的介面：
+
+\begingroup\small
+\begin{xltabular}{\linewidth}{|>{\raggedright\arraybackslash}p{2cm}|>{\raggedright\arraybackslash}p{2.4cm}|>{\raggedright\arraybackslash}p{3.4cm}|>{\raggedright\arraybackslash}X|}
+\caption{示範帳號}\\
+\hline\rowcolor{headgray}\textbf{帳號} & \textbf{密碼} & \textbf{角色} & \textbf{進入的介面}\\\hline\endhead
+\texttt{admin} & \texttt{admin123} & 平台管理員 & 平台管理介面（\texttt{/admin}）\\\hline
+\texttt{staff} & \texttt{staff123} & 工作人員 & 工作人員管理介面（\texttt{/staff}）\\\hline
+\texttt{manager} & \texttt{staff123} & 工作人員、平台管理員 & 兩個介面都能進入，頁首可切換\\\hline
+\texttt{alice}、\texttt{bob} & \texttt{customer123} & 顧客 & 顧客購物介面\\\hline
+\texttt{carol} & \texttt{customer123} & 顧客（已停用） & 無法登入，用來示範停用帳號\\\hline
+\end{xltabular}
+\endgroup

@@ -1,0 +1,62 @@
+\subsection{索引結構 (Index Structures)}
+
+PostgreSQL 會自動替主鍵與 UNIQUE 建立 B-tree 索引，但\textbf{不會}自動替外鍵建立索引。依 4.4 節的操作頻率，下列查詢最常執行，建議加上索引：
+
+\begingroup\small
+\begin{xltabular}{\linewidth}{|>{\raggedright\arraybackslash}p{5.6cm}|>{\raggedright\arraybackslash}X|}
+\caption{建議的索引}\\
+\hline\rowcolor{headgray}\textbf{索引} & \textbf{用途}\\\hline\endhead
+\at{CREATE EXTENSION pg_trgm;} \at{CREATE INDEX ON product USING gin (name gin_trgm_ops, description gin_trgm_ops);} & 關鍵字搜尋（PMS-F-001）是讀取量最大的操作，\texttt{ILIKE '\%關鍵字\%'} 無法使用 B-tree，trigram GIN 索引可以避免掃描整張商品表\\\hline
+\at{CREATE INDEX ON product (store_id) WHERE is_listed;} & 商店頁列出該店上架中的商品（STS-F-001）\\\hline
+\at{CREATE INDEX ON orders (user_id, order_time DESC);} & 顧客查詢自己的歷史訂單並依時間排序（OMS-F-005）\\\hline
+\at{CREATE INDEX ON orders (status, order_time);} & 工作人員依狀態與日期篩選訂單（OMS-F-006）\\\hline
+\at{CREATE INDEX ON orders (paid_at);} & 日、週、月報表依付款日期範圍查詢（RSS-F-001～003）\\\hline
+\at{CREATE INDEX ON order_item (product_id);} & 暢銷商品統計、商品被訂單引用時改為下架的檢查（PMS-F-007）\\\hline
+\at{CREATE INDEX ON product_discount (discount_code);} & 依折扣查詢適用商品、修改折扣期間時的 BR-13 檢查\\\hline
+\at{CREATE INDEX ON order_discount (discount_code);} & 折扣是否被訂單使用過的檢查（DMS-F-007）、Q4 統計\\\hline
+\at{CREATE INDEX ON return_request (order_id) WHERE status = 'pending';} & 更新訂單狀態前檢查是否有待審核的退貨（BR-25），部分索引只包含少量 pending 資料\\\hline
+\at{CREATE INDEX ON store_review (store_id);} & 商店頁顯示平均評分與評論列表（STS-F-004）\\\hline
+\end{xltabular}
+\endgroup
+
+\textbf{實測：加索引前後的比較。}示範資料只有 15 項商品、13 筆訂單，看不出索引的差別，因此我們另外啟動一個測試用資料庫，以 \at{sql_bench/bench_data.sql} 產生\textbf{測試資料}：依 4.5 節估計的一年訂單量，產生 20,000 位顧客、109,500 筆訂單與約 33 萬筆訂單明細，並把商品數放大到 10 萬項，其中約 0.2\% 的商品名稱含有「貓抓板」。這些資料只用來量測效能，不是真實資料，也沒有放進正式的資料庫。測試的兩個查詢是讀取量最大的商品關鍵字搜尋，以及顧客查詢自己的歷史訂單（4.4 節）。為了讓執行計畫簡短，關鍵字搜尋只比對商品名稱，所以 trigram 索引也只建在 \at{name} 上。
+
+\resultimg{bench_before.png}{加索引前：兩個查詢都要循序掃描整張表（Seq Scan）}
+\resultimg{bench_index.png}{建立 trigram GIN 索引與 \at{(user_id, order_time DESC)} 索引}
+\resultimg{bench_after.png}{加索引後：兩個查詢都改用索引（Bitmap Index Scan）}
+
+\begingroup\small
+\begin{xltabular}{\linewidth}{|>{\raggedright\arraybackslash}X|>{\raggedleft\arraybackslash}p{2.2cm}|>{\raggedleft\arraybackslash}p{2.2cm}|>{\raggedleft\arraybackslash}p{1.6cm}|}
+\caption{加索引前後的執行時間（\at{EXPLAIN ANALYZE} 的 Execution Time，連續執行 6 次、捨去第 1 次後取中位數）}\\
+\hline\rowcolor{headgray}\textbf{查詢} & \textbf{加索引前} & \textbf{加索引後} & \textbf{加速}\\\hline\endhead
+商品關鍵字搜尋（10 萬項商品中找出 194 項） & 27.18 ms & 0.46 ms & 約 59 倍\\\hline
+顧客的歷史訂單（109,513 筆訂單中找出 4 筆） & 4.54 ms & 0.07 ms & 約 63 倍\\\hline
+\end{xltabular}
+\endgroup
+
+加索引前，PostgreSQL 必須讀過整張表再逐筆過濾，例如歷史訂單查詢為了找出 4 筆訂單，丟掉了其餘 109,509 筆；加索引後只讀取符合條件的資料，兩個查詢都快了約 60 倍。資料量越大，循序掃描的時間會跟著線性增加，用索引查詢的時間則幾乎不變，所以這兩個索引的效益會隨營運時間持續擴大。重新產生截圖的指令為 \at{tools/make_bench_shots.sh}。
+
+\subsection{資料庫設計 (Database Design)}
+
+\begin{itemize}[itemsep=0.3em]
+  \item \textbf{報表改用 materialized view。}V1 的銷售報表需要彙總所有訂單明細，資料量隨時間線性成長（4.5 節），但過去日期的報表不會再變動。可以把 V1 建成 materialized view，每天凌晨 \at{REFRESH MATERIALIZED VIEW CONCURRENTLY} 一次，工作人員查詢報表時就不必每次重新計算。
+  \item \textbf{歷史資料分割。}\at{orders}、\at{order_item}、\at{order_status_history} 是成長最快的三張表，資料量變大後可以依 \at{order_time} 做 range partition（例如每年一個分割），查詢近期訂單時只需掃描最新的分割。
+  \item \textbf{購物車清理。}長期沒有結帳的 \at{cart_item} 可以定期清除，避免購物車資料無限累積。
+\end{itemize}
+
+\subsection{查詢 (Queries)}
+
+\begin{itemize}[itemsep=0.3em]
+  \item \textbf{結帳時依固定順序鎖定商品。}結帳交易以 \at{SELECT … FOR UPDATE} 鎖定購物車中的商品再扣庫存（BR-06）；鎖定時依 \at{product_id} 排序，可避免兩位顧客同時結帳時互相等待而發生 deadlock。
+  \item \textbf{只查需要的欄位。}商品列表不需要 \at{description} 這類長文字，只查列表需要的欄位可以減少傳輸量。
+  \item \textbf{避免 N+1 查詢。}顯示訂單列表時以 JOIN 或一次 \at{IN (…)} 查出所有明細，而不是每筆訂單各查一次。
+\end{itemize}
+
+\subsection{系統部署後的效能改善}
+
+系統部署到線上（6.1 節）後，另外做了三項不涉及資料庫綱要的改善：
+\begin{itemize}[itemsep=0.3em]
+  \item \textbf{批次查詢折扣，去掉 N+1 查詢。}商品列表原本對每項商品各查一次是否有進行中的特殊活動折扣，列出 $n$ 項商品就要 $n+1$ 次查詢；改為以 \at{product_id IN (…)} 一次查出所有商品的折扣。
+  \item \textbf{圖片改用 WebP。}網站圖片縮小尺寸並轉成 WebP，總大小由約 12~MB 降到約 0.3~MB；\at{product.image_url} 也改指向 \at{.webp} 檔（\at{03_seed.sql}）。
+  \item \textbf{CDN 快取。}前端打包的靜態檔快取一年、圖片快取一天；未登入時查詢商品、商店與進行中折扣的回應設定 \at{s-maxage=30}，讓 CDN 最多快取 30 秒；實測連續查詢 \at{/api/stores/}，第一次為 \at{x-vercel-cache: MISS}，30 秒內的後續查詢為 \at{HIT}，由 CDN 直接回應、不再查詢資料庫。登入後的請求一律不快取，庫存與價格仍在加入購物車與結帳時由資料庫即時檢查（BR-05、BR-06）。
+\end{itemize}

@@ -1,0 +1,44 @@
+本節實作 2 個檢視表與 4 個查詢，涵蓋聚合函數（COUNT、SUM、AVG、MAX）、GROUP BY、HAVING、ORDER BY 與巢狀查詢，對應報表統計子系統（RSS）與商店、折扣的管理需求。SQL 檔位於 \at{phase4/sql_q/}。正規化後 \at{orders} 不再儲存總額，需要訂單總額的 V1、Q2 改查檢視表 \at{v_orders}（5.3 節）。以下結果為在 PostgreSQL 16 上對示範資料執行的截圖。
+
+\begingroup\small
+\begin{xltabular}{\linewidth}{|>{\raggedright\arraybackslash}p{3.8cm}|>{\centering\arraybackslash}p{1.3cm}|>{\centering\arraybackslash}p{1.4cm}|>{\centering\arraybackslash}p{1.4cm}|>{\centering\arraybackslash}p{1.4cm}|X|}
+\caption{各查詢與檢視表使用的 SQL 功能}\\
+\hline\rowcolor{headgray}\textbf{查詢／檢視表} & \textbf{聚合} & \textbf{GROUP BY} & \textbf{ORDER BY} & \textbf{巢狀查詢} & \textbf{其他}\\\hline\endhead
+V1 \at{v_store_daily_sales} & $\surd$ & $\surd$ & $\surd$ & $\surd$ & CTE、window function\\\hline
+V2 \at{v_product_sales} & $\surd$ & $\surd$ & $\surd$ & & 四表 JOIN\\\hline
+Q1 各店銷售冠軍 & $\surd$ & & $\surd$ & $\surd$ & 相關子查詢\\\hline
+Q2 高消費顧客 & $\surd$ & $\surd$ & $\surd$ & $\surd$ & HAVING\\\hline
+Q3 商店評分 & $\surd$ & $\surd$ & $\surd$ & $\surd$ & LEFT JOIN\\\hline
+Q4 折扣使用統計 & $\surd$ & $\surd$ & $\surd$ & & LEFT JOIN\\\hline
+\end{xltabular}
+\endgroup
+
+\subsection{檢視表 V1：各商店每日銷售報表}
+對應 RSS-F-001 與 BR-23。一筆訂單可以包含多間商店的商品，因此先算出每間商店的商品在該訂單中扣除特殊活動折扣後的金額（\at{share}），再依比例分攤訂單總額；部分退貨的訂單從該商店扣除退款金額，已取消或全部退貨的訂單不計入。週報與月報只要把 \at{sales_date} 換成 \at{date_trunc('week', …)} 或 \at{date_trunc('month', …)} 再加總即可。
+\VerbatimInput[fontsize=\scriptsize,numbers=left,numbersep=4pt]{sql_q/v1_store_daily_sales.sql}
+\resultimg{q_v1.png}{V1 執行結果}
+
+\subsection{檢視表 V2：各商品銷售統計}
+對應 RSS-F-004（暢銷商品）。彙總每項商品的訂單數、銷售數量與扣除特殊活動折扣後的營收。
+\VerbatimInput[fontsize=\scriptsize,numbers=left,numbersep=4pt]{sql_q/v2_product_sales.sql}
+\resultimg{q_v2.png}{V2 執行結果（銷售量前 10 名）}
+
+\subsection{查詢 Q1：每間商店的銷售冠軍商品}
+以相關子查詢找出每間商店銷售量等於該店最大值的商品。
+\VerbatimInput[fontsize=\scriptsize,numbers=left,numbersep=4pt]{sql_q/q1_store_best_seller.sql}
+\resultimg{q_q1.png}{Q1 執行結果}
+
+\subsection{查詢 Q2：消費總額高於平均的顧客}
+內層子查詢先算出每位顧客的消費總額再取平均，外層以 HAVING 篩選高於平均的顧客，依消費金額由高到低排序。
+\VerbatimInput[fontsize=\scriptsize,numbers=left,numbersep=4pt]{sql_q/q2_top_customers.sql}
+\resultimg{q_q2.png}{Q2 執行結果}
+
+\subsection{查詢 Q3：各商店的平均評分}
+對應 STS-F-004。用 LEFT JOIN 讓沒有評價的商店也列出，並以純量子查詢計算上架中的商品數。
+\VerbatimInput[fontsize=\scriptsize,numbers=left,numbersep=4pt]{sql_q/q3_store_rating.sql}
+\resultimg{q_q3.png}{Q3 執行結果}
+
+\subsection{查詢 Q4：各折扣政策的使用統計}
+列出每個折扣政策被多少筆訂單使用、總共折抵多少金額，從未使用的折扣也會列出，方便工作人員評估促銷效果。
+\VerbatimInput[fontsize=\scriptsize,numbers=left,numbersep=4pt]{sql_q/q4_discount_usage.sql}
+\resultimg{q_q4.png}{Q4 執行結果}

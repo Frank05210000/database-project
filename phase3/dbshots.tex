@@ -1,0 +1,22 @@
+\newcommand{\dbshot}[3]{% {檔名}{寬度}{說明}
+\begin{figure}[htbp]\centering\includegraphics[width=#2\linewidth]{img/#1}\caption{#3}\end{figure}}
+
+\textbf{資料表清單。}資料庫中共有 4.1 節的 16 張資料表（圖 \ref{fig:db1}）。執行 \at{03_seed.sql} 與 \at{04_demo_data.sql} 後，各表的資料筆數如圖 \ref{fig:db2}：示範資料包含 3 間商店、15 項商品、9 位使用者（含 3 位隸屬商店的工作人員），以及 13 筆涵蓋 received、processing、shipping、closed、cancelled、returned 各種狀態的訂單。
+
+\dbshot{db1_tables.png}{0.85}{\label{fig:db1}資料庫中的 16 張資料表（\texttt{\textbackslash dt+}）}
+\dbshot{db2_counts.png}{0.5}{\label{fig:db2}各資料表的資料筆數}
+
+\textbf{資料表結構。}以 \texttt{\textbackslash d} 查看資料表定義，可以看到欄位型態、預設值、主鍵、CHECK、外鍵、被哪些表參照，以及掛在表上的 trigger。圖 \ref{fig:db3} 為 \at{orders}；圖 \ref{fig:db4} 為 \at{product_discount}，其中可以看到實作 BR-13 的 EXCLUDE 限制與參照 \at{discount} 的複合外鍵。
+
+\dbshot{db3_orders.png}{0.95}{\label{fig:db3}\at{orders} 的結構、限制與 trigger}
+\dbshot{db4_product_discount.png}{0.95}{\label{fig:db4}\at{product_discount} 的 EXCLUDE 限制與複合外鍵}
+
+\textbf{資料內容。}圖 \ref{fig:db5} 為示範訂單的金額欄位，皆依 BR-09～BR-12 計算；圖 \ref{fig:db6} 為訂單明細，以及由 trigger 自動寫入的訂單狀態歷程；圖 \ref{fig:db7} 為退貨申請與退貨明細，包含已核准、已拒絕與待審核三種狀態。
+
+\dbshot{db5_orders_data.png}{0.9}{\label{fig:db5}\at{orders} 的資料}
+\dbshot{db6_items.png}{0.85}{\label{fig:db6}\at{order_item} 與 \at{order_status_history} 的資料}
+\dbshot{db7_returns.png}{0.9}{\label{fig:db7}\at{return_request} 與 \at{return_item} 的資料}
+
+\textbf{完整性限制的驗證。}直接以 SQL 寫入違反商業規則的資料，資料庫都會拒絕（圖 \ref{fig:db8}）：訂單狀態從 received 直接跳到 closed 被 trigger 拒絕（BR-19）；把顧客 alice 設為商店工作人員被 trigger \at{store_staff_check} 拒絕（BR-21）；同一商品設定期間重疊的特殊活動折扣被 EXCLUDE 拒絕（BR-13）；購物車數量為 0 被 CHECK 拒絕（BR-05）；同一筆訂單第二次申請退貨被 UNIQUE 拒絕（BR-25）。
+
+\dbshot{db8_reject.png}{0.95}{\label{fig:db8}違反商業規則的資料被資料庫拒絕}

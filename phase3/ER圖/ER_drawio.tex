@@ -1,0 +1,223 @@
+\documentclass[border=8pt]{standalone}
+\usepackage{fontspec}\setmainfont{Helvetica}
+\usepackage[normalem]{ulem}
+\usepackage{tikz}\usetikzlibrary{shapes.geometric}
+\definecolor{bf}{HTML}{DAE8FC}\definecolor{bs}{HTML}{6C8EBF}
+\definecolor{yf}{HTML}{FFF2CC}\definecolor{ys}{HTML}{D6B656}
+\begin{document}
+\begin{tikzpicture}[
+  every node/.style={font=\fontsize{8}{9}\selectfont},
+  ent/.style={draw=bs,fill=bf,line width=0.6pt,minimum width=2.1cm,minimum height=0.7cm,font=\fontsize{9}{10}\selectfont\bfseries},
+  weak/.style={ent,double=bf,double distance=1.5pt},
+  rel/.style={draw=ys,fill=yf,line width=0.6pt,diamond,aspect=2.2,inner sep=1pt,minimum width=2.2cm,font=\fontsize{7.5}{8}\selectfont\bfseries},
+  idrel/.style={rel,double=yf,double distance=1.5pt},
+  attr/.style={draw,fill=white,line width=0.5pt,ellipse,inner sep=1pt,minimum height=0.55cm,minimum width=1.3cm},
+  key/.style={attr}, pkey/.style={attr}, der/.style={attr,dashed},
+  multi/.style={attr,double,double distance=1.2pt},
+  ln/.style={line width=0.5pt},
+  tot/.style={double,double distance=2pt,line width=0.5pt},
+  card/.style={fill=white,inner sep=1pt,font=\fontsize{9}{10}\selectfont\bfseries},
+]
+\node[ent] (user) at (0.00,22.00) {USER};
+\node[ent] (product) at (26.00,22.00) {PRODUCT};
+\node[ent] (disc) at (12.00,16.00) {DISCOUNT};
+\node[ent] (store) at (21.00,14.50) {STORE};
+\node[ent] (order) at (6.00,10.00) {ORDER};
+\node[weak] (item) at (26.00,10.00) {ORDER\_ITEM};
+\node[weak] (hist) at (-1.00,2.00) {STATUS\_HISTORY};
+\node[ent] (ret) at (14.00,2.00) {RETURN\_REQUEST};
+\node[ent] (set) at (28.00,1.00) {SYSTEM\_SETTING};
+\node[rel] (cart) at (13.00,22.00) {ADDS\_TO\_CART};
+\node[rel] (places) at (3.00,16.00) {PLACES};
+\node[rel] (uses) at (9.00,13.00) {USES};
+\node[rel] (applies) at (19.00,19.00) {APPLIES\_TO};
+\node[rel] (reviews) at (13.00,12.50) {REVIEWS};
+\node[rel] (sells) at (24.20,17.80) {SELLS};
+\node[rel] (incl) at (26.00,15.60) {INCLUDED\_IN};
+\node[idrel] (contains) at (16.00,10.00) {CONTAINS};
+\node[idrel] (haslog) at (2.50,6.00) {HAS\_LOG};
+\node[rel] (req) at (10.00,6.00) {REQUESTS};
+\node[rel] (rets) at (20.00,6.00) {RETURNS};
+\node[rel] (upd) at (-1.80,6.00) {UPDATES};
+\node[rel] (works) at (16.80,16.90) {WORKS\_AT};
+\node[rel] (proc) at (-8.00,-4.00) {PROCESSES};
+\node[key] (user_id) at (-5.00,25.00) {\underline{user\_id}};
+\node[attr] (user_lg) at (-5.00,24.25) {loginid};
+\node[attr] (user_nm) at (-5.00,23.50) {name};
+\node[attr] (user_pw) at (-5.00,22.75) {password\_hash};
+\node[attr] (user_em) at (-5.00,22.00) {email};
+\node[attr] (user_ad) at (-5.00,21.25) {address};
+\node[attr] (user_ph) at (-5.00,20.50) {phone};
+\node[attr] (user_ac) at (-5.00,19.75) {is\_active};
+\node[attr] (user_ct) at (-5.00,19.00) {created\_at};
+\node[multi] (user_role) at (2.60,24.30) {role};
+\node[attr] (cart_q) at (11.60,23.80) {quantity};
+\node[attr] (cart_t) at (14.60,23.80) {added\_at};
+\node[key] (product_id) at (31.50,25.40) {\underline{product\_id}};
+\node[attr] (product_nm) at (31.50,24.65) {name};
+\node[attr] (product_ds) at (31.50,23.90) {description};
+\node[attr] (product_ca) at (31.50,23.15) {category};
+\node[attr] (product_im) at (31.50,22.40) {image\_url};
+\node[attr] (product_pr) at (31.50,21.65) {price};
+\node[attr] (product_sk) at (31.50,20.90) {stock};
+\node[attr] (product_ls) at (31.50,20.15) {is\_listed};
+\node[attr] (product_ct) at (31.50,19.40) {created\_at};
+\node[attr] (product_ut) at (31.50,18.65) {updated\_at};
+\node[key] (disc_cd) at (8.60,18.30) {\underline{discount\_code}};
+\node[attr] (disc_ty) at (8.60,17.60) {discount\_type};
+\node[attr] (disc_ds) at (8.60,16.90) {description};
+\node[attr] (disc_sd) at (8.60,16.20) {start\_date};
+\node[attr] (disc_ed) at (8.60,15.50) {end\_date};
+\node[attr] (disc_rt) at (8.60,14.80) {rate};
+\node[attr] (disc_ma) at (8.60,14.10) {min\_amount};
+\node[attr] (disc_bq) at (10.60,19.40) {buy\_qty};
+\node[attr] (disc_fq) at (12.60,20.10) {free\_qty};
+\node[attr] (disc_ac) at (14.60,19.60) {is\_active};
+\node[key] (store_id) at (23.60,15.90) {\underline{store\_id}};
+\node[attr] (store_nm) at (23.60,15.20) {name};
+\node[attr] (store_ad) at (23.60,14.50) {address};
+\node[attr] (store_em) at (23.60,13.80) {email};
+\node[attr] (store_ph) at (23.60,13.10) {phone};
+\node[attr] (us_a) at (6.40,12.90) {amount};
+\node[attr] (rv_r) at (11.20,11.10) {rating};
+\node[attr] (rv_c) at (13.40,10.90) {comment};
+\node[attr] (rv_t) at (15.90,11.30) {reviewed\_at};
+\node[key] (order_id) at (1.50,13.00) {\underline{order\_id}};
+\node[attr] (order_tm) at (1.50,12.25) {order\_time};
+\node[attr] (order_pd) at (1.50,11.50) {paid\_at};
+\node[attr] (order_st) at (1.50,10.75) {status};
+\node[attr] (order_sb) at (1.50,10.00) {subtotal};
+\node[attr] (order_dt) at (1.50,9.25) {discount\_total};
+\node[attr] (order_tx) at (1.50,8.50) {tax};
+\node[attr] (order_sf) at (1.50,7.75) {shipping\_fee};
+\node[attr] (order_tt) at (1.50,7.00) {total};
+\node[attr] (order_rc) at (6.00,7.50) {recipient};
+\node[attr] (rc_nm) at (4.60,6.30) {name};
+\node[attr] (rc_ph) at (6.00,5.80) {phone};
+\node[attr] (rc_ad) at (7.40,6.40) {address};
+\node[pkey] (item_no) at (30.50,12.00) {\dashuline{item\_no}};
+\node[attr] (item_pn) at (30.50,11.20) {product\_name};
+\node[attr] (item_up) at (30.50,10.40) {unit\_price};
+\node[attr] (item_qt) at (30.50,9.60) {quantity};
+\node[attr] (item_ev) at (30.50,8.80) {event\_discount};
+\node[der] (item_ls) at (30.50,8.00) {line\_subtotal};
+\node[pkey] (h_no) at (-3.20,0.40) {\dashuline{seq\_no}};
+\node[attr] (h_st) at (-1.00,-0.10) {status};
+\node[attr] (h_t) at (1.40,0.40) {changed\_at};
+\node[key] (ret_id) at (18.60,3.50) {\underline{return\_id}};
+\node[attr] (ret_rq) at (18.60,2.75) {requested\_at};
+\node[attr] (ret_rs) at (18.60,2.00) {reason};
+\node[attr] (ret_st) at (18.60,1.25) {status};
+\node[attr] (ret_pa) at (18.60,0.50) {processed\_at};
+\node[attr] (ret_rj) at (18.60,-0.25) {reject\_reason};
+\node[der] (ret_rf) at (18.60,-1.00) {refund\_total};
+\node[attr] (rt_q) at (22.60,4.80) {return\_qty};
+\node[attr] (rt_a) at (23.20,3.90) {refund\_amount};
+\node[key] (set_k) at (31.80,2.00) {\underline{setting\_key}};
+\node[attr] (set_v) at (31.80,1.25) {setting\_value};
+\node[attr] (set_d) at (31.80,0.50) {description};
+\draw[ln] (user) -- (user_id);
+\draw[ln] (user) -- (user_lg);
+\draw[ln] (user) -- (user_nm);
+\draw[ln] (user) -- (user_pw);
+\draw[ln] (user) -- (user_em);
+\draw[ln] (user) -- (user_ad);
+\draw[ln] (user) -- (user_ph);
+\draw[ln] (user) -- (user_ac);
+\draw[ln] (user) -- (user_ct);
+\draw[ln] (user) -- (user_role);
+\draw[ln] (cart) -- (cart_q);
+\draw[ln] (cart) -- (cart_t);
+\draw[ln] (product) -- (product_id);
+\draw[ln] (product) -- (product_nm);
+\draw[ln] (product) -- (product_ds);
+\draw[ln] (product) -- (product_ca);
+\draw[ln] (product) -- (product_im);
+\draw[ln] (product) -- (product_pr);
+\draw[ln] (product) -- (product_sk);
+\draw[ln] (product) -- (product_ls);
+\draw[ln] (product) -- (product_ct);
+\draw[ln] (product) -- (product_ut);
+\draw[ln] (disc) -- (disc_cd);
+\draw[ln] (disc) -- (disc_ty);
+\draw[ln] (disc) -- (disc_ds);
+\draw[ln] (disc) -- (disc_sd);
+\draw[ln] (disc) -- (disc_ed);
+\draw[ln] (disc) -- (disc_rt);
+\draw[ln] (disc) -- (disc_ma);
+\draw[ln] (disc) -- (disc_bq);
+\draw[ln] (disc) -- (disc_fq);
+\draw[ln] (disc) -- (disc_ac);
+\draw[ln] (store) -- (store_id);
+\draw[ln] (store) -- (store_nm);
+\draw[ln] (store) -- (store_ad);
+\draw[ln] (store) -- (store_em);
+\draw[ln] (store) -- (store_ph);
+\draw[ln] (uses) -- (us_a);
+\draw[ln] (reviews) -- (rv_r);
+\draw[ln] (reviews) -- (rv_c);
+\draw[ln] (reviews) -- (rv_t);
+\draw[ln] (order) -- (order_id);
+\draw[ln] (order) -- (order_tm);
+\draw[ln] (order) -- (order_pd);
+\draw[ln] (order) -- (order_st);
+\draw[ln] (order) -- (order_sb);
+\draw[ln] (order) -- (order_dt);
+\draw[ln] (order) -- (order_tx);
+\draw[ln] (order) -- (order_sf);
+\draw[ln] (order) -- (order_tt);
+\draw[ln] (order) -- (order_rc);
+\draw[ln] (order_rc) -- (rc_nm);
+\draw[ln] (order_rc) -- (rc_ph);
+\draw[ln] (order_rc) -- (rc_ad);
+\draw[ln] (item) -- (item_no);
+\draw[ln] (item) -- (item_pn);
+\draw[ln] (item) -- (item_up);
+\draw[ln] (item) -- (item_qt);
+\draw[ln] (item) -- (item_ev);
+\draw[ln] (item) -- (item_ls);
+\draw[ln] (hist) -- (h_no);
+\draw[ln] (hist) -- (h_st);
+\draw[ln] (hist) -- (h_t);
+\draw[ln] (ret) -- (ret_id);
+\draw[ln] (ret) -- (ret_rq);
+\draw[ln] (ret) -- (ret_rs);
+\draw[ln] (ret) -- (ret_st);
+\draw[ln] (ret) -- (ret_pa);
+\draw[ln] (ret) -- (ret_rj);
+\draw[ln] (ret) -- (ret_rf);
+\draw[ln] (rets) -- (rt_q);
+\draw[ln] (rets) -- (rt_a);
+\draw[ln] (set) -- (set_k);
+\draw[ln] (set) -- (set_v);
+\draw[ln] (set) -- (set_d);
+\draw[ln] (user) -- node[card,pos=0.2]{M} (cart);
+\draw[ln] (product) -- node[card,pos=0.2]{N} (cart);
+\draw[ln] (user) -- node[card,pos=0.22]{1} (places);
+\draw[tot] (order) -- node[card,pos=0.22]{N} (places);
+\draw[ln] (order) -- node[card,pos=0.35]{M} (uses);
+\draw[ln] (disc) -- node[card,pos=0.35]{N} (uses);
+\draw[ln] (disc) -- node[card,pos=0.2]{M} (applies);
+\draw[ln] (product) -- node[card,pos=0.2]{N} (applies);
+\draw[ln] (order) -- node[card,pos=0.2]{M} (reviews);
+\draw[ln] (store) -- node[card,pos=0.2]{N} (reviews);
+\draw[ln] (store) -- node[card,pos=0.33]{1} (sells);
+\draw[tot] (product) -- node[card,pos=0.33]{N} (sells);
+\draw[ln] (product) -- node[card,pos=0.23]{1} (incl);
+\draw[tot] (item) -- node[card,pos=0.27]{N} (incl);
+\draw[tot] (order) -- node[card,pos=0.2]{1} (contains);
+\draw[tot] (item) -- node[card,pos=0.2]{N} (contains);
+\draw[tot] (order) -- node[card,pos=0.28]{1} (haslog);
+\draw[tot] (hist) -- node[card,pos=0.28]{N} (haslog);
+\draw[ln] (order) -- node[card,pos=0.27]{1} (req);
+\draw[tot] (ret) -- node[card,pos=0.27]{1} (req);
+\draw[tot] (ret) -- node[card,pos=0.21]{M} (rets);
+\draw[ln] (item) -- node[card,pos=0.21]{N} (rets);
+\draw[ln] (user) -- node[card,pos=0.2]{1} (upd);
+\draw[tot] (hist) -- node[card,pos=0.37]{N} (upd);
+\draw[ln] (user) -- node[card,pos=0.2]{1} (proc);
+\draw[ln] (ret) -- node[card,pos=0.2]{N} (proc);
+\draw[ln] (user) -- node[card,pos=0.12]{N} (works);
+\draw[ln] (store) -- node[card,pos=0.35]{1} (works);
+\end{tikzpicture}
+\end{document}

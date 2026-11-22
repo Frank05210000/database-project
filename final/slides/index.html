@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FUWA FUWA Final Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<style>
+/* ---------- final-deck additions (same palette as the midterm) ---------- */
+.mono{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace}
+.todo{display:inline-block;background:#fff;border:2px dashed var(--red);color:var(--red);border-radius:10px;padding:1px 10px;font-size:13px;font-weight:700}
+.h-sm h2{font-size:36px}.h-sm h2 .en{font-size:19px;margin-top:2px}
+
+/* title */
+.s-title .team{margin-top:16px;font-size:15px;font-weight:700;line-height:1.6}
+.s-title .team span{font-family:var(--en);color:#8a6a5d;font-weight:500;font-size:13px;margin-left:6px}
+
+/* overview timeline */
+.tl{display:flex;align-items:stretch;gap:8px;margin-top:18px}
+.tl .ph{flex:1;padding:10px 10px 9px;text-align:center;position:relative}
+.tl .ph b{display:block;font-family:var(--en);font-size:15px;color:var(--red);letter-spacing:.05em}
+.tl .ph .z{font-weight:900;font-size:16px;line-height:1.2;margin-top:2px}
+.tl .ph em{display:block;font-style:normal;font-family:var(--en);font-size:11.5px;color:#8a6a5d;line-height:1.2;margin-top:2px}
+.tl .ph.now{background:var(--red);border-color:var(--brick);color:#fff}
+.tl .ph.now b,.tl .ph.now em{color:#FFE4B5}
+.tl .ar{align-self:center;color:var(--red);font-weight:900;font-size:20px}
+.agenda{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.agenda .it{padding:8px 12px;display:flex;gap:10px;align-items:center}
+.agenda .it .no{flex:none;width:28px;height:28px;border-radius:50%;background:var(--orange);color:#fff;font-family:var(--en);font-weight:700;display:grid;place-items:center}
+.agenda .it b{font-size:15px;font-weight:900;line-height:1.15;display:block}
+.agenda .it em{font-style:normal;font-family:var(--en);font-size:11.5px;color:#8a6a5d}
+
+/* user stories with DB mapping */
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:14px}
+.us2{display:grid;grid-template-columns:auto 1fr auto;gap:2px 9px;align-items:start;font-size:14px;line-height:1.28;padding:6px 0;border-top:2px dashed #f2cfa0}
+.role .us2:nth-of-type(1){border-top:0}
+.us2 .id{font-family:var(--en);font-weight:600;font-size:12px;color:#fff;background:var(--orange);border-radius:8px;padding:2px 7px;margin-top:2px;white-space:nowrap}
+.us2 em{font-style:normal;display:block;font-family:var(--en);font-size:11.5px;color:#9a7b6c}
+.db{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;background:#E8F1D9;color:#4f7330;border:1.5px solid #9DBB74;border-radius:7px;padding:1px 6px;white-space:nowrap;margin-top:2px;text-align:right}
+.db.tg{background:#FFE6DA;color:var(--brick);border-color:var(--orange)}
+.db.vw{background:#FFF1C9;color:#9a6a1c;border-color:var(--orange-2)}
+.legend{display:flex;gap:14px;align-items:center;font-size:12.5px;color:#6b4f44;margin-top:10px}
+
+/* schema grid */
+.schema{column-count:6;column-gap:10px;margin-top:10px}
+.tb{break-inside:avoid;background:#fff;border:2.5px solid var(--orange-2);border-radius:12px;margin-bottom:10px;overflow:hidden;box-shadow:0 3px 0 var(--shadow)}
+.tb.chg{border-color:var(--red);box-shadow:0 3px 0 rgba(213,107,89,.35)}
+.tb h5{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:var(--peach);padding:3px 8px;color:var(--brick);display:flex;justify-content:space-between}
+.tb.chg h5{background:var(--red);color:#fff}
+.tb ul{list-style:none;padding:3px 8px 4px}
+.tb li{font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:1.32;color:var(--brown);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb li.pk{text-decoration:underline;font-weight:700}
+.tb li .fk{color:#a07d6c;font-weight:500}
+.tb li.new{color:#4f7330;font-weight:700}.tb li.new:after{content:" ＋";}
+.tb li.rm{color:var(--red);text-decoration:line-through;opacity:.85}
+.chgs{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:4px}
+.chgs .c{padding:5px 10px;font-size:12px;line-height:1.28}
+.chgs .c b{display:block;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--red)}
+.chgs .c em{display:block;font-style:normal;font-family:var(--en);font-size:11px;color:#8a6a5d}
+
+/* FD + normalization */
+.fdimg{background:#fff;border-radius:16px;border:3px solid var(--orange-2);box-shadow:0 5px 0 var(--shadow);padding:6px 10px;display:flex;align-items:center;justify-content:center}
+.fdimg img{max-width:100%;max-height:100%;display:block}
+.nf{display:flex;gap:10px;margin-top:12px}
+.nf .n{flex:1;padding:8px 12px;display:flex;gap:10px;align-items:center}
+.nf .n .big{font-family:var(--en);font-weight:700;font-size:30px;color:var(--red);line-height:1}
+.nf .n.ok .big{color:#6f9446}
+.nf .n b{font-size:14px;line-height:1.2;display:block}
+.nf .n em{font-style:normal;font-family:var(--en);font-size:11.5px;color:#8a6a5d;display:block}
+.fix{display:grid;grid-template-columns:1.15fr 1fr;gap:16px;margin-top:12px}
+.step3{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:center;padding:9px 12px;margin-bottom:10px}
+.step3 .tn{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:var(--brick);line-height:1.3}
+.step3 .tn small{display:block;font-family:var(--zh);font-weight:700;color:var(--red);font-size:12px}
+.step3 .what{font-size:13.5px;line-height:1.35}
+.step3 .what em{display:block;font-style:normal;font-family:var(--en);font-size:11.5px;color:#8a6a5d}
+.code{background:#2b211d;color:#f6e7d7;border-radius:14px;padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.5;white-space:pre;overflow:hidden;box-shadow:0 5px 0 var(--shadow)}
+.code .k{color:#F6BB6F;font-weight:700}.code .c{color:#a8907f}.code .s{color:#9DBB74}
+
+/* rules / triggers */
+.rstats{display:flex;gap:12px;margin-top:14px}
+.rstats .card{flex:1;text-align:center;padding:8px 6px}
+.rstats b{display:block;font-family:var(--en);font-size:34px;color:var(--red);line-height:1.05}
+.rstats span{font-size:13px;font-weight:700}
+.rstats em{display:block;font-style:normal;font-family:var(--en);font-size:11px;color:#8a6a5d}
+.trig{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin-top:12px}
+.tr{display:grid;grid-template-columns:62px 1fr;gap:8px;align-items:center;padding:6px 10px}
+.tr .br{font-family:var(--en);font-weight:700;font-size:12px;background:var(--red);color:#fff;border-radius:8px;text-align:center;padding:2px 0}
+.tr b{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--brick);display:block}
+.tr span{font-size:12.5px;line-height:1.3;display:block}
+
+/* queries */
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin-top:12px}
+.qc{padding:8px 12px 10px;display:flex;flex-direction:column;gap:6px;min-height:0}
+.qc .qh{display:flex;gap:8px;align-items:baseline}
+.qc .qh b{font-size:15px;font-weight:900;line-height:1.2}
+.qc .qh em{font-style:normal;font-family:var(--en);font-size:11.5px;color:#8a6a5d}
+.qc .tags{display:flex;gap:5px;flex-wrap:wrap}
+.qc .tags i{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;background:var(--peach);border:1.5px solid var(--orange-2);border-radius:6px;padding:0 6px}
+.qc .res{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:#1e1f29;border-radius:10px;overflow:hidden}
+.qc .res img{max-width:100%;max-height:100%;display:block}
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px;height:452px}
+
+/* AI */
+.ai2{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+.tool{padding:12px 14px;font-size:13.5px;line-height:1.4}
+.tool h4{font-family:var(--en);font-size:15px;color:var(--red);letter-spacing:.05em;margin-bottom:4px}
+.tool li{list-style:none;padding:2px 0}
+.tool li:before{content:"• ";color:var(--orange);font-weight:900}
+
+/* demo */
+.demo{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;margin-top:14px;height:440px}
+.video{background:#2b211d;border-radius:22px;border:3px solid var(--orange-2);box-shadow:0 6px 0 var(--shadow);display:grid;place-items:center;color:#FFE4B5;text-align:center;overflow:hidden}
+.video video{width:100%;height:100%;object-fit:contain;background:#000}
+.shots{display:grid;grid-template-rows:repeat(4,1fr);gap:9px}
+.shots .s{padding:6px 12px;display:flex;gap:10px;align-items:center;font-size:13.5px;line-height:1.3}
+.shots .s .id{flex:none;font-family:var(--en);font-weight:600;font-size:12px;color:#fff;background:var(--orange);border-radius:8px;padding:2px 7px}
+.shots .s em{display:block;font-style:normal;font-family:var(--en);font-size:11.5px;color:#8a6a5d}
+
+/* conclusion */
+.concl{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px}
+.concl .card{padding:14px 18px}
+.concl h4{font-size:18px;font-weight:900;color:var(--brick);margin-bottom:6px}
+.concl h4 span{font-family:var(--en);font-weight:600;font-size:14px;color:var(--orange);margin-left:6px}
+.concl li{list-style:none;padding:5px 0;font-size:14px;line-height:1.38;border-top:2px dashed #f2cfa0}
+.concl li:first-child{border-top:0}
+.concl li em{display:block;font-style:normal;font-family:var(--en);font-size:11.5px;color:#8a6a5d}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+
+<!-- ================= 1. TITLE ================= -->
+<section class="slide s-title on">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <svg class="hills" viewBox="0 0 1280 200" preserveAspectRatio="none"><path d="M0 120 C220 60 420 130 640 120 S1040 60 1280 110 V200 H0Z" fill="#FFFBD6"/><path d="M0 150 C200 110 360 175 620 165 S1010 110 1280 150 V200 H0Z" fill="#FCDF8C"/></svg>
+  <svg class="dash" viewBox="0 0 1280 720" fill="none" stroke="#F4A460" stroke-width="7" stroke-linecap="round" stroke-dasharray="14 18"><path d="M-10 560 C150 500 330 590 520 600 S800 560 1000 520"/><path d="M700 180 C900 170 1060 230 1290 300" opacity=".7"/></svg>
+  <img class="logo" src="img/fuwa_title.png" alt="FUWA FUWA" style="top:150px">
+  <div class="t" style="top:250px">
+    <h1>資料庫系統 期末專題 Demo<span class="en">Database Systems · Final Demo</span></h1>
+    <div class="meta"><span class="pill">e-Shop 線上寵物用品商城</span><span class="pill en">Phase 1 → 4 · Design → Running system</span></div>
+    <div class="team">徐法恩・魏提安・鄧玉璿・黃柏瑋・陳俊佑<br>指導老師 <span class="todo">待補</span>　日期 <span class="todo">待補</span></div>
+  </div>
+  <div class="stand"></div>
+  <img class="mascot" src="img/All.png" alt="">
+  <img class="dog" src="img/dog.png" alt="">
+  <div class="foot"><span>NTUT · 115-1 · 資料庫系統 Database Systems</span><span class="pg"></span></div>
+</section>
+
+<!-- ================= 2. FROM MIDTERM TO FINAL ================= -->
+<section class="slide">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <svg class="hills" viewBox="0 0 1280 200" preserveAspectRatio="none"><path d="M0 150 C200 110 360 175 620 165 S1010 110 1280 150 V200 H0Z" fill="#FCDF8C" opacity=".7"/></svg>
+  <img class="deco" src="img/dog.png" style="right:44px;top:72px;width:110px" alt="">
+  <div class="body">
+    <div class="kicker">Since the Midterm · 期中之後</div>
+    <h2>從設計圖，到一個會守規則的資料庫<span class="en">From a design on paper to a database that enforces its own rules</span></h2>
+    <div class="tl">
+      <div class="card ph"><b>PHASE 1</b><div class="z">需求分析</div><em>19 user stories · 26 rules</em></div><div class="ar">→</div>
+      <div class="card ph"><b>PHASE 2</b><div class="z">ER 與 Schema</div><em>9 entities · 15 tables</em></div><div class="ar">→</div>
+      <div class="card ph"><b>MIDTERM</b><div class="z">期中報告</div><em>Design review</em></div><div class="ar">→</div>
+      <div class="card ph"><b>PHASE 3</b><div class="z">資料庫實作</div><em>PostgreSQL 16 · triggers</em></div><div class="ar">→</div>
+      <div class="card ph"><b>PHASE 4</b><div class="z">正規化與查詢</div><em>FD · 3NF · views</em></div><div class="ar">→</div>
+      <div class="card ph now"><b>FINAL</b><div class="z">今天</div><em>Demo</em></div>
+    </div>
+    <div class="agenda">
+      <div class="card it"><div class="no">1</div><div><b>使用者故事</b><em>Revised user stories</em></div></div>
+      <div class="card it"><div class="no">2</div><div><b>ER Model</b><em>Revised ER model</em></div></div>
+      <div class="card it"><div class="no">3</div><div><b>Schema</b><em>Revised schema diagram</em></div></div>
+      <div class="card it"><div class="no">4</div><div><b>函數相依與正規化</b><em>FD &amp; normalization</em></div></div>
+      <div class="card it"><div class="no">5</div><div><b>SQL 實作</b><em>Constraints &amp; triggers</em></div></div>
+      <div class="card it"><div class="no">6</div><div><b>查詢與檢視表</b><em>Queries &amp; views</em></div></div>
+      <div class="card it"><div class="no">7</div><div><b>生成式 AI</b><em>The use of Generative AI</em></div></div>
+      <div class="card it" style="background:var(--red);border-color:var(--brick);color:#fff"><div class="no" style="background:#fff;color:var(--red)">▶</div><div><b>Demo</b><em style="color:#FFE4B5">Video clip</em></div></div>
+    </div>
+    <div class="card" style="margin-top:16px;padding:9px 18px;display:flex;gap:14px;align-items:center;font-size:14px">
+      <span class="chip o">技術 Stack</span>
+      <span><b>React 18 + TypeScript</b>（沿用 fuwafuwa-shop 前端）→ <b>FastAPI</b> → <b>PostgreSQL 16</b>，以 <b>Docker Compose</b> 一鍵啟動；線上版 <b>fuwafuwa-eshop.vercel.app</b>（Vercel + Neon PostgreSQL）</span>
+    </div>
+  </div>
+  <div class="foot"><span>FUWA FUWA e-Shop</span><span class="pg"></span></div>
+</section>
+
+<!-- ================= 3. USER STORIES (1/2) ================= -->
+<section class="slide">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <img class="deco" src="img/hat.png" style="right:60px;top:72px;width:90px" alt="">
+  <div class="body">
+    <div class="kicker">Revised User Stories · 使用者故事（1/2）</div>
+    <h2>每個故事都對應到資料庫裡的表或規則<span class="en">Every story now maps to a table, a view or a trigger</span></h2>
+    <div class="cols2">
+      <div class="card role">
+        <div class="head"><div class="av"><img src="img/dog.png" alt=""></div><div><b>訪客 · 顧客（購物）</b><span>Guest · Customer — shopping</span></div></div>
+        <div class="us2"><span class="id">US-01</span><div>以關鍵字搜尋商品<em>Search products by keyword</em></div><span class="db">product</span></div>
+        <div class="us2"><span class="id">US-02</span><div>註冊為顧客（選配）<em>Register as a customer</em></div><span class="db">users UNIQUE</span></div>
+        <div class="us2"><span class="id">US-03</span><div>以 loginid 與密碼登入、登出<em>Log in / out</em></div><span class="db">users · user_role</span></div>
+        <div class="us2"><span class="id">US-04</span><div>購物車加入、改數量、移除<em>Manage the cart</em></div><span class="db tg">cart_item_check</span></div>
+        <div class="us2"><span class="id">US-05</span><div>結帳時看到小計、折扣、稅、運費、總額<em>Full price breakdown</em></div><span class="db vw">v_orders</span></div>
+        <div class="us2"><span class="id">US-06</span><div>有效折扣自動套用<em>Valid discounts apply automatically</em></div><span class="db">order_discount</span></div>
+      </div>
+      <div class="card role">
+        <div class="head"><div class="av"><img src="img/checkout.png" alt="" style="width:44px"></div><div><b>顧客（訂單）</b><span>Customer — orders</span></div></div>
+        <div class="us2"><span class="id">US-07</span><div>確認付款後完成下單<em>Place the order after payment</em></div><span class="db">orders · order_item</span></div>
+        <div class="us2"><span class="id">US-08</span><div>查詢歷史訂單與目前狀態<em>Order history &amp; status</em></div><span class="db tg">orders_status_log</span></div>
+        <div class="us2"><span class="id">US-09</span><div>received 時直接取消訂單<em>Cancel while “received”</em></div><span class="db tg">orders_status_check</span></div>
+        <div class="us2"><span class="id">US-10</span><div>選商品與數量申請退貨，每單一次<em>One return request per order</em></div><span class="db tg">return_item_insert</span></div>
+        <div class="us2"><span class="id">US-11</span><div>對買過的商店評分評論（選配）<em>Rate the store</em></div><span class="db tg">store_review_insert</span></div>
+        <div class="legend" style="margin-top:12px"><span class="db">table</span>資料表<span class="db vw">view</span>檢視表<span class="db tg">trigger</span>資料庫 trigger</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>19 則故事自 Phase 1 起保留不變 · Source: Phase 4 SRS §2.2 · db/init/*.sql</span><span class="pg"></span></div>
+</section>
+
+<!-- ================= 4. USER STORIES (2/2) ================= -->
+<section class="slide">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <img class="deco" src="img/brush.png" style="right:56px;top:70px;width:90px" alt="">
+  <div class="body">
+    <div class="kicker">Revised User Stories · 使用者故事（2/2）</div>
+    <h2>後台的規則，交給資料庫最後把關<span class="en">Back-office rules are guarded by the database itself</span></h2>
+    <div class="cols2">
+      <div class="card role">
+        <div class="head"><div class="av"><img src="img/brush.png" alt=""></div><div><b>工作人員</b><span>Staff</span></div></div>
+        <div class="us2"><span class="id">US-12</span><div>新增、查詢、修改、刪除商品與庫存<em>Manage products and stock</em></div><span class="db tg">product_touch</span></div>
+        <div class="us2"><span class="id">US-13</span><div>訂單依序 processing → shipping → closed<em>Advance order status</em></div><span class="db tg">orders_status_check</span></div>
+        <div class="us2"><span class="id">US-14</span><div>審核退貨申請，同意或拒絕<em>Approve / reject returns</em></div><span class="db tg">return_request_update</span></div>
+        <div class="us2"><span class="id">US-15</span><div>新增三種折扣，系統給唯一代碼<em>Three discount types, unique code</em></div><span class="db tg">discount_code_immutable</span></div>
+        <div class="us2"><span class="id">US-16</span><div>同商品特殊活動期間重疊時拒絕<em>Reject overlapping periods</em></div><span class="db tg">product_discount_check</span></div>
+        <div class="us2"><span class="id">US-17</span><div>各商店日、週、月銷售報表<em>Daily / weekly / monthly sales</em></div><span class="db vw">v_store_daily_sales</span></div>
+        <div class="us2"><span class="id">US-18</span><div>暢銷商品與期間統計（選配）<em>Best sellers</em></div><span class="db vw">v_product_sales</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card role">
+          <div class="head"><div class="av"><img src="img/collar.png" alt="" style="width:50px"></div><div><b>平台管理員</b><span>Administrator</span></div></div>
+          <div class="us2"><span class="id">US-19</span><div>建立帳號、管理角色、停用違規帳號<em>Accounts, roles, deactivation</em></div><span class="db">users · user_role</span></div>
+        </div>
+        <div class="card" style="padding:14px 18px;flex:1;font-size:14px;line-height:1.5">
+          <b style="font-size:16px">期中 → 期末，什麼變了？</b><span class="en-line">What changed since the midterm</span>
+          <div style="margin-top:8px">故事本身沒有增減；改變的是<b>每則故事落在資料庫的哪裡</b>：</div>
+          <div style="margin-top:6px">・<b>12 個 trigger</b> 守住跨表、跨狀態的規則（BR-06、13、19、25…）</div>
+          <div>・<b>報表</b>改由檢視表產生，不在程式裡算</div>
+          <div>・<b>US-16</b> 原本靠 EXCLUDE，正規化後改用 trigger（見第 8 頁）</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Source: Phase 4 SRS §2.2 · db/init/02_triggers.sql</span><span class="pg"></span></div>
+</section>
+
+<!-- ================= 5. ER ================= -->
+<section class="slide h-sm">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="body">
+    <div class="kicker">Revised ER Model · 實體關係模型</div>
+    <h2>ER 只多一個關係，其餘修改發生在轉成表格之後<span class="en">One new relationship; the other revisions happened at the relational level</span></h2>
+    <div class="diag" style="grid-template-columns:1fr 330px;height:448px">
+      <div class="imgcard"><img src="img/er.png" alt="ER diagram"></div>
+      <div class="pts">
+        <div class="bigstat"><div><b>9</b><span>實體<br>Entities</span></div><div><b>14</b><span>關係<br>Relationships</span></div><div><b>2</b><span>弱實體<br>Weak</span></div></div>
+        <div class="card pt"><div class="ic">1</div><div><b>新增 WORKS_AT：工作人員隸屬商店</b><span>USER N : 1 STORE，商店工作人員只能管理自己店的資料；沒有隸屬的是總部人員</span><em>Staff can belong to one store (BR-21)</em></div></div>
+        <div class="card pt"><div class="ic">2</div><div><b>ORDER_ITEM 保存下單快照</b><span>品名、單價在下單當下複製，商品改價不影響舊訂單；報表 V2 直接用它算營收</span><em>Snapshot of name &amp; price feeds the V2 revenue</em></div></div>
+        <div class="card pt"><div class="ic">3</div><div><b>RETURNS 關係的屬性 → return_item</b><span>退貨數量、退款金額掛在「退貨申請 × 訂單明細」上，Phase 4 再用 FD 檢查它的主鍵</span><em>Relationship attributes became return_item</em></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Source: Phase 4 SRS §3 · ER.drawio（點圖可放大）</span><span class="pg"></span></div>
+</section>
+
+<!-- ================= 6. SCHEMA ================= -->
+<section class="slide h-sm">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="body" style="top:84px">
+    <div class="kicker">Revised Schema · 修訂後的關聯綱要</div>
+    <h2>16 張表，5 處修訂<span class="en">16 tables, 5 revisions since the midterm</span></h2>
+    <div class="chgs" style="margin-top:10px">
+      <div class="card c"><b>orders − total</b>總額由其他金額算出 → 改由 v_orders 計算<em>Transitive dependency removed</em></div>
+      <div class="card c"><b>product_discount − 3 欄</b>類型與期間只存在 discount<em>Partial dependency removed</em></div>
+      <div class="card c"><b>return_item − return_id</b>主鍵改為 (order_id, item_no)<em>Partial dependency removed</em></div>
+      <div class="card c"><b>return_request + refund_total</b>核准退貨時存下退款總額<em>New column (DR-13, BR-26)</em></div>
+      <div class="card c"><b>+ store_staff</b>工作人員隸屬的商店，主鍵 user_id<em>New table (BR-21)</em></div>
+    </div>
+    <div class="schema" id="schema"></div>
+  </div>
+  <div class="foot"><span><u>底線</u> 主鍵　→ 外鍵　<span style="color:#4f7330;font-weight:700">＋新增</span>　<s style="color:var(--red)">刪除</s> · Source: db/init/01_schema.sql</span><span class="pg"></span></div>
+</section>
+
+<!-- ================= 7. FD ================= -->
+<section class="slide h-sm">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="body">
+    <div class="kicker">Functional Dependencies · 函數相依</div>
+    <h2>逐表畫出 FD，找到 3 條會造成重複資料的相依<span class="en">Drawing every table’s FDs revealed three that cause duplicated data</span></h2>
+    <div class="nf">
+      <div class="card n ok"><div class="big">12</div><div><b>張表已是 BCNF</b><em>Every determinant is a candidate key</em></div></div>
+      <div class="card n"><div class="big">1</div><div><b>orders：遞移相依 → 只到 2NF</b><em>{subtotal, discount_total, tax, shipping_fee} → total</em></div></div>
+      <div class="card n"><div class="big">2</div><div><b>部分相依 → 只到 1NF</b><em>product_discount, return_item</em></div></div>
+    </div>
+    <div class="fdimg" style="height:118px;margin-top:12px"><img src="img/fd/ORDERS.png" alt="ORDERS FD"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px;height:150px">
+      <div class="fdimg"><img src="img/fd/PRODUCT_DISCOUNT.png" alt="PRODUCT_DISCOUNT FD"></div>
+      <div class="fdimg"><img src="img/fd/RETURN_ITEM.png" alt="RETURN_ITEM FD"></div>
+    </div>
+    <div class="card" style="margin-top:12px;padding:8px 16px;font-size:13.5px;line-height:1.4">
+      <b>為什麼期中沒有拆？</b>Phase 2 刻意複製期間欄位，讓 <span class="mono">EXCLUDE</span> 直接檢查期間不重疊；複製 <span class="mono">order_id</span> 是為了用複合外鍵限制只能退同一張訂單的明細。<span class="en-line">The duplication was a deliberate shortcut for constraints — Phase 4 asked whether it was worth it.</span>
+    </div>
+  </div>
+  <div class="foot"><span>Source: Phase 4 SRS §5.1 · fd.py（粗線為決定者，箭頭為被決定的屬性）</span><span class="pg"></span></div>
+</section>
+
+<!-- ================= 8. NORMALIZATION ================= -->
+<section class="slide h-sm">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="body">
+    <div class="kicker">Normalization · 正規化到 3NF / BCNF</div>
+    <h2>拆乾淨之後，原本靠重複欄位的規則改由 trigger 與 view 守<span class="en">After decomposition, triggers and a view take over what duplication used to do</span></h2>
+    <div class="fix">
+      <div>
+        <div class="card step3"><div class="tn">orders<small>2NF → BCNF</small></div><div class="what">刪除 <span class="mono">total</span>，改由檢視表 <span class="mono">v_orders</span> 計算；表上保留 CHECK 確保總額不為負<em>total is derived, never stored</em></div></div>
+        <div class="card step3"><div class="tn">product_discount<small>1NF → BCNF</small></div><div class="what">只留 <span class="mono">(product_id, discount_code)</span>；BR-13 期間不重疊改由 <span class="mono">product_discount_check</span>、<span class="mono">discount_period_check</span> 兩個 trigger 檢查<em>EXCLUDE replaced by triggers + advisory lock</em></div></div>
+        <div class="card step3"><div class="tn">return_item<small>1NF → BCNF</small></div><div class="what">每筆訂單只能退一次，所以 <span class="mono">order_id</span> 就能識別退貨申請；主鍵改為 <span class="mono">(order_id, item_no)</span><em>Composite FK still limits returns to the same order</em></div></div>
+        <div class="card" style="padding:9px 14px;font-size:13.5px;line-height:1.4"><b>結果：16 張表全部達到 BCNF</b>（因此也符合 3NF）<span class="en-line">All 16 tables are now in BCNF — and therefore 3NF</span></div>
+      </div>
+<div class="code"><span class="c">-- 正規化後（db/init/01_schema.sql）</span>
+<span class="k">CREATE TABLE</span> product_discount (
+  product_id    INT REFERENCES product,
+  discount_code VARCHAR(20) REFERENCES discount,
+  <span class="k">PRIMARY KEY</span> (product_id, discount_code));
+
+<span class="k">CREATE TABLE</span> return_item (
+  order_id   INT REFERENCES return_request(order_id),
+  item_no    SMALLINT,
+  return_qty INT <span class="k">CHECK</span> (return_qty &gt; 0),
+  refund_amount NUMERIC(10,0),
+  <span class="k">PRIMARY KEY</span> (order_id, item_no),
+  <span class="k">FOREIGN KEY</span> (order_id, item_no)
+    REFERENCES order_item (order_id, item_no));
+
+<span class="k">CREATE VIEW</span> v_orders <span class="k">AS</span>
+<span class="k">SELECT</span> o.*, o.subtotal - o.discount_total
+          + o.tax + o.shipping_fee <span class="k">AS</span> total
+<span class="k">FROM</span> orders o;</div>
+    </div>
+  </div>
+  <div class="foot"><span>Source: Phase 4 SRS §5.2–5.4 · db/init/01_schema.sql · 02_triggers.sql</span><span class="pg"></span></div>
+</section>
+
+<!-- ================= 9. SQL: RULES IN THE DB ================= -->
+<section class="slide h-sm">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <img class="deco" src="img/All.png" style="right:44px;top:70px;width:110px" alt="">
+  <div class="body">
+    <div class="kicker">SQL Implementation · 規則寫進資料庫</div>
+    <h2>就算繞過網站直接下 SQL，違規資料也進不來<span class="en">Bypass the website and run raw SQL — invalid data is still rejected</span></h2>
+    <div class="rstats" style="margin-right:130px">
+      <div class="card"><b>15</b><span>資料表</span><em>Tables</em></div>
+      <div class="card"><b>32</b><span>CHECK 限制</span><em>CHECK constraints</em></div>
+      <div class="card"><b>19</b><span>外鍵</span><em>Foreign keys</em></div>
+      <div class="card"><b>12</b><span>Trigger</span><em>Triggers</em></div>
+      <div class="card"><b>3</b><span>檢視表</span><em>Views</em></div>
+    </div>
+    <div class="trig">
+      <div class="card tr"><span class="br">BR-06</span><div><b>cart_item_check</b><span>購物車數量不得超過庫存，只有顧客能加入</span></div></div>
+      <div class="card tr"><span class="br">BR-19</span><div><b>orders_status_check</b><span>訂單狀態只能依序前進，received 才能取消</span></div></div>
+      <div class="card tr"><span class="br">DR-07</span><div><b>orders_status_log</b><span>建立訂單與每次改狀態，自動寫入狀態歷程</span></div></div>
+      <div class="card tr"><span class="br">BR-25</span><div><b>return_request_insert / update</b><span>每單限申請一次退貨，由工作人員審核</span></div></div>
+      <div class="card tr"><span class="br">BR-13</span><div><b>product_discount_check</b><span>同商品的特殊活動折扣期間不得重疊</span></div></div>
+      <div class="card tr"><span class="br">BR-18</span><div><b>discount_code_immutable</b><span>折扣代碼建立後不可修改</span></div></div>
+    </div>
+    <div class="card example" style="margin-top:12px;padding:9px 16px">
+      <span class="chip o">違規時 On violation</span>
+      <span class="mono" style="font-size:13px"><b style="color:var(--red)">RAISE EXCEPTION</b> 'BR-13: …'</span>
+      <span style="font-size:13px;flex:1">訊息以規則編號開頭 → 後端轉成 HTTP 409 → 前端顯示原因<span class="en-line">Rule ID in the message, surfaced to the user as HTTP 409</span></span>
+    </div>
+  </div>
+  <div class="foot"><span>Source: db/init/01_schema.sql · 02_triggers.sql（PostgreSQL 16）</span><span class="pg"></span></div>
+</section>
+
+<!-- ================= 10. VIEWS ================= -->
+<section class="slide h-sm">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="body">
+    <div class="kicker">Views · 檢視表</div>
+    <h2>銷售報表直接來自檢視表<span class="en">Sales reports are views, not application code</span></h2>
+    <div class="vgrid">
+      <div class="card qc">
+        <div class="qh"><span class="chip">V1</span><b>各商店每日銷售</b><em>v_store_daily_sales · US-17</em></div>
+        <div class="tags"><i>CTE</i><i>SUM() OVER (PARTITION BY)</i><i>COUNT / SUM</i><i>GROUP BY</i><i>LEFT JOIN</i></div>
+        <div style="font-size:12.5px;line-height:1.35">一張訂單可能跨多間商店：先算各店商品淨額，再依比例分攤訂單總額，扣掉已核准的退款；週報、月報只要改成 <span class="mono">date_trunc</span>。</div>
+        <div class="res"><img src="img/q/v1_store_daily_sales.png" alt="V1 result"></div>
+      </div>
+      <div class="card qc">
+        <div class="qh"><span class="chip">V2</span><b>各商品銷售統計</b><em>v_product_sales · US-18</em></div>
+        <div class="tags"><i>COUNT(DISTINCT)</i><i>SUM</i><i>GROUP BY</i><i>ORDER BY</i><i>4-table JOIN</i></div>
+        <div style="font-size:12.5px;line-height:1.35">彙總每項商品的訂單數、銷售量與扣除特殊活動折扣後的營收；不計取消與退貨的訂單。Q1 也建立在這個檢視表上。</div>
+        <div class="res"><img src="img/q/v2_product_sales.png" alt="V2 result"></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Source: phase4/sql_q/v1_*.sql, v2_*.sql · 結果為示範資料實際執行</span><span class="pg"></span></div>
+</section>
+
+<!-- ================= 11. QUERIES ================= -->
+<section class="slide h-sm">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="body">
+    <div class="kicker">Complex Queries · 複雜查詢</div>
+    <h2>4 個查詢，回答 4 個經營問題<span class="en">Four queries answering four business questions</span></h2>
+    <div class="qgrid" style="height:462px;grid-template-rows:1fr 1fr">
+      <div class="card qc">
+        <div class="qh"><span class="chip">Q1</span><b>每間店賣最好的是哪個商品？</b></div>
+        <div class="tags"><i>MAX()</i><i>相關子查詢 correlated subquery</i><i>ORDER BY</i></div>
+        <div class="res"><img src="img/q/q1_store_best_seller.png" alt="Q1"></div>
+      </div>
+      <div class="card qc">
+        <div class="qh"><span class="chip">Q2</span><b>誰的消費高於平均？</b></div>
+        <div class="tags"><i>SUM / AVG</i><i>GROUP BY … HAVING</i><i>巢狀子查詢</i><i>ORDER BY</i></div>
+        <div class="res"><img src="img/q/q2_top_customers.png" alt="Q2"></div>
+      </div>
+      <div class="card qc">
+        <div class="qh"><span class="chip">Q3</span><b>各店評分如何？（沒評價也列出）</b></div>
+        <div class="tags"><i>AVG / COUNT</i><i>LEFT JOIN</i><i>純量子查詢</i><i>NULLS LAST</i></div>
+        <div class="res"><img src="img/q/q3_store_rating.png" alt="Q3"></div>
+      </div>
+      <div class="card qc">
+        <div class="qh"><span class="chip">Q4</span><b>哪個折扣最有效？（沒用過也列出）</b></div>
+        <div class="tags"><i>COUNT / SUM</i><i>LEFT JOIN</i><i>COALESCE</i><i>GROUP BY</i></div>
+        <div class="res"><img src="img/q/q4_discount_usage.png" alt="Q4"></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Source: phase4/sql_q/q1–q4 · 全部使用聚合、GROUP BY／ORDER BY，Q1–Q3 含巢狀查詢</span><span class="pg"></span></div>
+</section>
+
+<!-- ================= 12. TUNING ================= -->
+<section class="slide h-sm">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <img class="deco" src="img/ball.png" style="right:60px;top:74px;width:84px" alt="">
+  <div class="body">
+    <div class="kicker">Database Tuning · 資料庫調校</div>
+    <h2>依最常執行的操作決定要加哪些索引<span class="en">Indexes chosen from the most frequent operations</span></h2>
+    <div class="concl">
+      <div class="card">
+        <h4>索引 <span>Indexes</span></h4>
+        <ul>
+          <li><span class="mono">GIN (name gin_trgm_ops)</span> 關鍵字搜尋：<span class="mono">ILIKE '%…%'</span> 用不到 B-tree<em>Trigram index for keyword search (US-01) · 實測 27.18 → 0.46 ms</em></li>
+          <li><span class="mono">orders (user_id, order_time DESC)</span> 顧客查歷史訂單<em>Order history (US-08) · 實測 4.54 → 0.07 ms</em></li>
+          <li><span class="mono">orders (paid_at)</span> 日、週、月報表依日期範圍查詢<em>Sales reports (US-17)</em></li>
+          <li><span class="mono">return_request (order_id) WHERE status='pending'</span> 部分索引<em>Partial index for pending returns (BR-25)</em></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>設計與查詢 <span>Design &amp; queries</span></h4>
+        <ul>
+          <li><b>外鍵不會自動建索引</b>：PostgreSQL 只替 PK、UNIQUE 建索引<em>PostgreSQL does not index FKs automatically</em></li>
+          <li><b>報表改 materialized view</b>：過去日期的報表不會再變，每天刷新一次<em>Past sales never change — refresh nightly</em></li>
+          <li><b>結帳依 product_id 順序鎖定商品</b>：<span class="mono">SELECT … FOR UPDATE</span> 避免 deadlock<em>Consistent lock order prevents deadlocks</em></li>
+          <li><b>部署後</b>：商品列表的折扣改成一次批次查詢（去掉 N+1），圖片改 WebP（12 MB → 0.3 MB），公開資料交給 CDN 快取<em>After deployment: no N+1, WebP images, CDN caching</em></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Source: Phase 4 SRS §7 · 實測用 10 萬項商品、10.95 萬筆訂單的測試資料</span><span class="pg"></span></div>
+</section>
+
+<!-- ================= 13. GENERATIVE AI ================= -->
+<section class="slide h-sm">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <img class="deco" src="img/All.png" style="right:48px;top:70px;width:110px" alt="">
+  <div class="body">
+    <div class="kicker">The Use of Generative AI · 生成式 AI 的使用</div>
+    <h2>期中：AI 提問、人做決定。期末：AI 實作、資料庫驗證<span class="en">Midterm: AI asks, we decide. Final: AI builds, the database verifies</span></h2>
+    <div class="loop" style="margin-right:120px">
+      <div class="card step">我們定規格<small>We write the spec (SRS, BR)</small></div><div class="ar">→</div>
+      <div class="card step">AI 在獨立分支實作<small>AI implements on a branch</small></div><div class="ar">→</div>
+      <div class="card step">跑在真的資料庫上<small>Run against PostgreSQL</small></div><div class="ar">→</div>
+      <div class="card step">我們審查再合併<small>We review, then merge</small></div>
+    </div>
+    <div class="ai2">
+      <div class="card dec"><span class="chip br">分析</span>
+        <div class="q">AI 導讀原本的 fuwafuwa-shop 原始碼<em>AI read the existing frontend code</em></div>
+        <div class="a">找出非原子建單、前端算金額；決定沿用前端、後端改 PostgreSQL<em>Found non-atomic orders → rebuilt the backend on PostgreSQL</em></div></div>
+      <div class="card dec"><span class="chip br">正規化</span>
+        <div class="q">AI 依 FD 分析產生 3NF 的 schema 修改與 trigger<em>AI applied our FD analysis to the schema</em></div>
+        <div class="a">我們決定拆表的方式與 total 改用 view<em>We chose the decomposition and the v_orders view</em></div></div>
+      <div class="card dec"><span class="chip br">驗證</span>
+        <div class="q">查詢、報表數字怎麼確定是對的？<em>How do we know the numbers are right?</em></div>
+        <div class="a">每個查詢都在 Docker 的 PostgreSQL 上實際執行，截圖即結果<em>Every query runs on the real database</em></div></div>
+    </div>
+    <div class="card" style="margin-top:14px;padding:9px 16px;display:flex;gap:12px;align-items:center;font-size:13.5px">
+      <span class="chip o">工具 Tools</span>
+      <span><b>Claude Code</b>：需求釐清、SRS 與報告排版、schema／trigger、前後端實作、E2E 測試、簡報、Demo 影片字幕　<span class="todo">組員補充其他工具與心得</span></span>
+    </div>
+  </div>
+  <div class="foot"><span>AI 寫、資料庫驗、人決定　AI builds · the database verifies · humans decide</span><span class="pg"></span></div>
+</section>
+
+<!-- ================= 14. DEMO ================= -->
+<section class="slide h-sm">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="body">
+    <div class="kicker">Demo · 系統展示</div>
+    <h2>一筆訂單從下單到報表<span class="en">One order, from checkout to the sales report</span></h2>
+    <div class="demo">
+      <div class="video" id="demoVideo">
+        <img src="video/poster.jpg" alt="Demo 影片" style="width:100%;height:100%;object-fit:cover;display:block">
+      </div>
+      <div class="shots">
+        <div class="card s"><span class="id">US-04–07</span><div>顧客加入購物車、結帳、確認付款<em>Cart → checkout → order “received”</em></div></div>
+        <div class="card s"><span class="id">US-13–14</span><div>工作人員推進訂單狀態、審核退貨<em>Staff advance status, review returns</em></div></div>
+        <div class="card s"><span class="id">US-16</span><div>重疊的特殊活動折扣被 trigger 拒絕<em>Overlapping discount rejected by a trigger</em></div></div>
+        <div class="card s"><span class="id">US-17</span><div>日／週／月銷售報表與熱銷 Top 10<em>Daily / weekly / monthly reports, top sellers</em></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>影片 6 分 36 秒 · 9 段情境涵蓋 US-01～US-19 · 中英字幕 · 穿插 psql 查詢佐證</span><span class="pg"></span></div>
+</section>
+
+<!-- ================= 15. CONCLUSION ================= -->
+<section class="slide h-sm">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="body">
+    <div class="kicker">Conclusion &amp; Future Work · 結論與未來工作</div>
+    <h2>資料的規則放在資料庫，網站只負責呈現<span class="en">Rules live in the database; the website presents them</span></h2>
+    <div class="concl">
+      <div class="card">
+        <h4>結論 <span>What we learned</span></h4>
+        <ul>
+          <li>26 條商業規則中與資料有關的部分，都用 PK、FK、UNIQUE、CHECK 或 trigger 實作<em>Data rules are enforced by the DBMS itself</em></li>
+          <li>FD 分析找出期中為了方便而複製的欄位，正規化後重複資料只存一份<em>FD analysis exposed deliberate duplication</em></li>
+          <li>正規化有代價：EXCLUDE 換成 trigger，總額改用 view 計算<em>Normalization moved checks into triggers and views</em></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>未來工作 <span>Future work</span></h4>
+        <ul>
+          <li>各商店獨立權限：工作人員只管理自己商店的商品、訂單與報表<em>Per-store staff permissions</em></li>
+          <li>串接第三方金流與物流，實際完成付款與退款<em>Real payment and logistics</em></li>
+          <li>商品搜尋改用全文檢索，並加入推薦功能<em>Full-text search and recommendations</em></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <img class="deco" src="img/dog_product_illustration.png" style="right:60px;bottom:40px;width:150px;opacity:.95" alt="">
+  <div class="foot"><span>Source: Phase 4 SRS §9</span><span class="pg"></span></div>
+</section>
+
+<!-- ================= 16. END ================= -->
+<section class="slide s-end">
+  <div class="awning"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <svg class="hills" viewBox="0 0 1280 200" preserveAspectRatio="none"><path d="M0 120 C220 60 420 130 640 120 S1040 60 1280 110 V200 H0Z" fill="#FFFBD6"/><path d="M0 150 C200 110 360 175 620 165 S1010 110 1280 150 V200 H0Z" fill="#FCDF8C"/></svg>
+  <svg class="dash" viewBox="0 0 1280 720" fill="none" stroke="#F4A460" stroke-width="7" stroke-linecap="round" stroke-dasharray="14 18"><path d="M-10 620 C180 560 360 640 600 640 S900 590 1290 560"/></svg>
+  <img class="prod" style="left:150px" src="img/hat.png" alt="">
+  <img class="prod" style="left:300px;width:100px" src="img/bow.png" alt="">
+  <img class="prod" style="right:300px;width:100px" src="img/can.png" alt="">
+  <img class="prod" style="right:150px" src="img/collar.png" alt="">
+  <div class="center">
+    <img class="lg" src="img/fuwa_title.png" alt="FUWA FUWA">
+    <h1>謝謝聆聽<span class="en">Thank you · Q &amp; A</span></h1>
+    <div class="links"><span class="pill en">github.com/Frank05210000/database-project</span></div>
+  </div>
+  <div class="foot"><span>FUWA FUWA e-Shop</span><span class="pg"></span></div>
+</section>
+
+</div></div>
+<div class="lb" id="lb"><img alt=""></div>
+<div id="bar"></div>
+<div id="help">← → / Space · F fullscreen · click diagram to zoom</div>
+
+<script src="schema_data.js"></script>
+<script>
+(function(){
+  // revised schema cards
+  var box=document.getElementById('schema');
+  if(box&&window.SCHEMA){box.innerHTML=SCHEMA.map(function(t){
+    return '<div class="tb'+(t.changed?' chg':'')+'"><h5><span>'+t.t+'</span>'+(t.changed?'<span>修訂</span>':'')+'</h5><ul>'+
+      t.cols.map(function(c){var cl=[c.pk?'pk':'',c.new?'new':'',c.removed?'rm':''].join(' ').trim();
+        return '<li'+(cl?' class="'+cl+'"':'')+'>'+c.n+(c.fk?' <span class="fk">→'+c.fk+'</span>':'')+'</li>'}).join('')+'</ul></div>'}).join('')}
+  // page numbers
+  var slides=[].slice.call(document.querySelectorAll('.slide')),N=slides.length;
+  slides.forEach(function(s,k){var p=s.querySelector('.pg');if(p)p.textContent=String(k+1).padStart(2,'0')+' / '+String(N).padStart(2,'0')});
+  // demo video, if it exists
+  var v=document.getElementById('demoVideo'),probe=document.createElement('video');
+  probe.src='video/FUWA_FUWA_Final_Demo.mp4';probe.poster='video/poster.jpg';probe.controls=true;probe.preload='metadata';probe.style.cssText='width:100%;height:100%;background:#000';
+  probe.addEventListener('loadedmetadata',function(){v.innerHTML='';v.appendChild(probe)});
+
+  var stage=document.getElementById('stage'),bar=document.getElementById('bar'),i=0;
+  function fit(){var s=Math.min(innerWidth/1280,innerHeight/720);stage.style.transform='translate(-50%,-50%) scale('+s+')';}
+  function go(n){i=Math.max(0,Math.min(N-1,n));slides.forEach(function(s,k){s.classList.toggle('on',k===i)});bar.style.width=((i+1)/N*100)+'%';try{history.replaceState(null,'','#'+(i+1))}catch(e){}}
+  addEventListener('resize',fit);fit();
+  addEventListener('keydown',function(e){
+    if(['ArrowRight','ArrowDown',' ','PageDown','Enter'].indexOf(e.key)>-1){e.preventDefault();go(i+1)}
+    else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].indexOf(e.key)>-1){e.preventDefault();go(i-1)}
+    else if(e.key==='Home')go(0);else if(e.key==='End')go(N-1);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+  });
+  var lb=document.getElementById('lb');
+  lb.addEventListener('click',function(){lb.classList.remove('on')});
+  addEventListener('keydown',function(e){if(e.key==='Escape')lb.classList.remove('on')});
+  document.getElementById('viewport').addEventListener('click',function(e){
+    if(e.target.closest&&e.target.closest('video'))return;
+    var c=e.target.closest&&e.target.closest('.imgcard,.fdimg,.res');
+    if(c){lb.querySelector('img').src=c.querySelector('img').src;lb.classList.add('on');return}
+    go(e.clientX<innerWidth*0.3?i-1:i+1)});
+  addEventListener('hashchange',function(){var n=(parseInt(location.hash.slice(1),10)||1)-1;if(n!==i)go(n)});
+  go((parseInt(location.hash.slice(1),10)||1)-1);
+})();
+</script>
+</body>
+</html>

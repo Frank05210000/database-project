@@ -1,0 +1,36 @@
+\at{users} & 登入時以 loginid 驗證帳號 & 2,250 & 20,033 & 45,074,250 Query\\\hline
+\at{users} & 註冊新顧客 & 30 & don't care & 30 Insert\\\hline
+\at{users} & 平台管理員修改資料、停用或啟用帳號 & 20 & 20,033 & 400,660 Update\\\hline
+\at{user_role} & 登入時讀取角色 & 2,250 & 20,040 & 45,090,000 Query\\\hline
+\at{user_role} & trigger 檢查顧客或工作人員角色 & 4,800 & 20,040 & 96,192,000 Query\\\hline
+\at{user_role} & 平台管理員指派或移除角色 & 2 & don't care & 2 Insert\\\hline
+\at{store} & 商品頁與商店頁顯示商店資訊 & 6,000 & 10 & 60,000 Query\\\hline
+\at{store_staff} & 工作人員操作時查詢隸屬的商店 & 1,000 & 30 & 30,000 Query\\\hline
+\at{store_staff} & 平台管理員指定工作人員的商店 & 1 & 30 & 30 Update\\\hline
+\at{product} & 關鍵字搜尋、瀏覽與商品詳細資料 & 45,000 & 2,000 & 90,000,000 Query\\\hline
+\at{product} & 結帳扣庫存、取消或退貨回補 & 920 & 2,000 & 1,840,000 Update\\\hline
+\at{product} & 工作人員新增或修改商品 & 50 & 2,000 & 100,000 Update\\\hline
+\at{cart_item} & 加入購物車、修改數量 & 4,500 & don't care & 4,500 Insert\\\hline
+\at{cart_item} & 顯示購物車 & 6,000 & 9,000 & 54,000,000 Query\\\hline
+\at{cart_item} & 移除商品、結帳後清空 & 1,200 & 9,000 & 10,800,000 Delete\\\hline
+\at{orders} & 確認付款後建立訂單 & 300 & don't care & 300 Insert\\\hline
+\at{orders} & 顧客查詢歷史訂單、工作人員查詢訂單 & 1,950 & 109,500 & 213,525,000 Query\\\hline
+\at{orders} & 更新訂單狀態、取消訂單 & 920 & 109,500 & 100,740,000 Update\\\hline
+\at{orders} & 日、週、月銷售報表 & 150 & 109,500 & 16,425,000 Query\\\hline
+\at{order_item} & 建立訂單明細 & 900 & don't care & 900 Insert\\\hline
+\at{order_item} & 查詢訂單明細、報表統計 & 2,100 & 328,500 & 689,850,000 Query\\\hline
+\texttt{order\_status\_\allowbreak history} & trigger 自動記錄狀態變更 & 1,220 & don't care & 1,220 Insert\\\hline
+\texttt{order\_status\_\allowbreak history} & 顧客查看狀態歷程 & 500 & 416,100 & 208,050,000 Query\\\hline
+\at{discount} & 購物車預估與結帳時查詢有效折扣 & 6,300 & 200 & 1,260,000 Query\\\hline
+\at{discount} & 工作人員新增、修改或停用折扣 & 10 & 200 & 2,000 Update\\\hline
+\texttt{product\_\allowbreak discount} & 商品頁顯示特殊活動折扣 & 45,000 & 1,000 & 45,000,000 Query\\\hline
+\texttt{product\_\allowbreak discount} & 設定特殊活動適用商品 & 5 & don't care & 5 Insert\\\hline
+\at{order_discount} & 記錄訂單套用的折扣 & 450 & don't care & 450 Insert\\\hline
+\at{order_discount} & 查詢訂單金額明細 & 750 & 164,250 & 123,187,500 Query\\\hline
+\at{return_request} & 申請退貨 & 9 & don't care & 9 Insert\\\hline
+\at{return_request} & 查詢退貨申請 & 100 & 3,285 & 328,500 Query\\\hline
+\at{return_request} & 審核退貨申請 & 9 & 3,285 & 29,565 Update\\\hline
+\at{return_item} & 新增退貨明細、核准時寫入退款金額 & 28 & 4,928 & 137,984 Update\\\hline
+\at{store_review} & 撰寫商店評價 & 60 & don't care & 60 Insert\\\hline
+\at{store_review} & 商店頁顯示平均評分與評論 & 6,000 & 28,470 & 170,820,000 Query\\\hline
+\at{system_setting} & 計算金額時讀取稅率與基本運費 & 6,300 & 2 & 12,600 Query\\\hline

@@ -1,0 +1,76 @@
+% ================= Phase 3 新增內容 =================
+% 4.4～4.8 接在 Section 4 之後；Section 5 為部分功能的實作與展示。
+
+\newcommand{\shot}[3]{% {檔名}{寬度}{說明}
+\begin{figure}[htbp]\centering
+\IfFileExists{img/#1}{\includegraphics[width=#2\linewidth]{img/#1}}{\fbox{\parbox{0.8\linewidth}{\centering\vspace{2em}（截圖：#1）\vspace{2em}}}}
+\caption{#3}\end{figure}}
+
+\needspace{10\baselineskip}
+\subsection{預期的資料庫操作、頻率與資料量 (Expectation of the Possible DB Operations, Frequencies and Data Volumes)}
+
+我們以營運一年後的規模估計每日的資料庫操作。估計的前提為：每日約 3,000 位訪客瀏覽網站，其中約 1,500 位顧客登入；每日成立約 300 筆訂單，每筆平均 3 項商品；約 30 位工作人員在後台處理訂單、商品與折扣。
+
+表中「預估使用頻率」為每日透過 SQL 執行該操作的次數；「表格資料量」為該資料表一年後的預估 tuple 數（估算依據見 4.5 節）；「系統負擔」以最壞情況計算，假設每次查詢、修改或刪除都要掃過整張表，即「頻率 × 表格資料量」；新增只寫入一筆，與表格大小無關，因此資料量記為 don't care，負擔即為頻率。
+
+\begingroup\small
+\begin{xltabular}{\linewidth}{|>{\raggedright\arraybackslash}p{2.9cm}|>{\raggedright\arraybackslash}X|>{\raggedleft\arraybackslash}p{1.5cm}|>{\raggedleft\arraybackslash}p{1.6cm}|>{\raggedleft\arraybackslash}p{3.2cm}|}
+\caption{預期的資料庫操作、頻率與系統負擔}\\
+\hline\rowcolor{headgray}\textbf{Table} & \textbf{可能操作} & \textbf{預估使用頻率 (per day)} & \textbf{表格資料量 (tuples)} & \textbf{系統負擔 (worst case，次／day)}\\\hline\endfirsthead
+\hline\rowcolor{headgray}\textbf{Table} & \textbf{可能操作} & \textbf{預估使用頻率 (per day)} & \textbf{表格資料量 (tuples)} & \textbf{系統負擔 (worst case，次／day)}\\\hline\endhead
+\input{freq_table.tex}
+\end{xltabular}
+\endgroup
+
+最壞情況下負擔最大的是商品搜尋與商品頁（\at{product}、\at{product_discount}，每日約 9 千萬次 tuple 讀取）、登入與角色檢查（\at{users}、\at{user_role}），以及訂單相關查詢。實際上這些查詢都依主鍵、\at{loginid} 的 UNIQUE 索引或外鍵查找，不需要掃過整張表；Phase 4 會再針對商品關鍵字搜尋與訂單查詢加上索引並調校。
+
+\needspace{10\baselineskip}
+\subsection{資料量估計 (Estimated Data Volume)}
+
+每張資料表的大小以「schema 長度 × 預估 tuple 數」估計。schema 長度為一筆資料各欄位平均長度的總和：\at{INT}／\at{SERIAL} 4 bytes、\at{SMALLINT} 2 bytes、\at{NUMERIC} 約 8 bytes、\at{BOOLEAN} 1 byte、\at{DATE} 4 bytes、\at{TIMESTAMP} 8 bytes；\at{VARCHAR} 與 \at{TEXT} 以平均實際長度估計（中文以 UTF-8 每字 3 bytes 計），另加 1 byte 長度標頭。tuple 數為營運一年後的預估筆數。估計不含 PostgreSQL 每筆約 24 bytes 的列標頭與索引空間，實際占用約為估計值的 1.5 至 2 倍。下表依 Section 5 正規化後的 schema 計算：\at{orders} 不含 \at{total}，\at{product_discount} 只有兩個欄位，\at{return_item} 以 \at{order_id} 取代 \at{return_id}；與正規化前相比每年約少 0.9 MB。
+
+\begingroup\small
+\begin{xltabular}{\linewidth}{|>{\raggedright\arraybackslash}p{3.3cm}|>{\raggedleft\arraybackslash}p{1.9cm}|>{\raggedleft\arraybackslash}p{1.8cm}|>{\raggedleft\arraybackslash}p{1.9cm}|>{\raggedright\arraybackslash}X|}
+\caption{各資料表的預估大小}\\
+\hline\rowcolor{headgray}\textbf{資料表} & \textbf{schema 長度 (bytes)} & \textbf{tuple 數} & \textbf{預估大小} & \textbf{tuple 數估算依據}\\\hline\endfirsthead
+\hline\rowcolor{headgray}\textbf{資料表} & \textbf{schema 長度 (bytes)} & \textbf{tuple 數} & \textbf{預估大小} & \textbf{tuple 數估算依據}\\\hline\endhead
+\input{size_table.tex}
+\end{xltabular}
+\endgroup
+
+一年的資料量約 60 MB，最大的是 \at{order_item}、\at{orders} 與 \at{order_status_history}，三者都會隨訂單數線性成長；商品、商店、折扣等主檔資料量很小。
+
+\clearpage
+\subsection{建立資料庫的 SQL 語法 (SQL Statements Used to Construct the Schema)}
+
+資料庫建立在 PostgreSQL 16 上，SQL 分成四個檔案，依序執行：
+
+\begin{enumerate}[itemsep=0.2em]
+  \item \at{01_schema.sql}：建立 16 張資料表與主鍵、外鍵、UNIQUE、CHECK 限制與檢視表 \at{v_orders}，為 5.3 節正規化後的版本。
+  \item \at{02_triggers.sql}：建立 4.3 節表中的 trigger 與輔助函式；BR-13 改用 5.4 節的 trigger。
+  \item \at{03_seed.sql}：匯入初始資料（4.7 節）。
+\end{enumerate}
+
+\textbf{與 Phase 2 的差異。}除了 Section 5 的正規化之外，\at{return_request} 新增 \at{refund_total} 欄位。Phase 2 的 ER 圖把退款總額畫成衍生屬性；實作時退貨核准後退款金額就固定，不會再變動，顧客與工作人員查詢退貨結果時也常用到，所以在核准當下依 BR-26 算好後存起來，避免每次查詢都要加總 \at{return_item}。
+
+\subsubsection{資料表與限制（01\_schema.sql）}
+\VerbatimInput[fontsize=\scriptsize,numbers=left,numbersep=4pt]{sql/01_schema.sql}
+
+\subsubsection{Trigger（02\_triggers.sql）}
+\VerbatimInput[fontsize=\scriptsize,numbers=left,numbersep=4pt]{sql/02_triggers.sql}
+
+\clearpage
+\subsection{匯入資料的 SQL 語法 (SQL Statements Used to Insert the Data)}
+
+\at{03_seed.sql} 匯入系統運作需要的初始資料（DBS-F-002），包含系統參數、平台管理員與工作人員帳號、示範顧客、商店、商品與折扣政策。密碼以 bcrypt 雜湊後儲存。
+
+\VerbatimInput[fontsize=\scriptsize,numbers=left,numbersep=4pt]{sql/03_seed.sql}
+
+\clearpage
+\subsection{資料表在 PostgreSQL 中的實作 (Implementation of Tables in the Target DBMS)}
+
+我們以 Docker 啟動 PostgreSQL 16，執行上述三個 SQL 檔建立資料庫。以下截圖為在 \at{psql} 中查詢的結果。
+
+\input{dbshots.tex}
+
+\input{sec_phase4}

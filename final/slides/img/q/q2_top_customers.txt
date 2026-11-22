@@ -1,0 +1,5 @@
+fuwa=# \i q2_top_customers.sql
+ loginid |  name  | order_count | spent 
+---------+--------+-------------+-------
+ alice   | 陳愛麗 |           6 |  9738
+(1 row)
