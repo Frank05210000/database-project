@@ -55,6 +55,14 @@ cd backend && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 
 每個測試都在全新的 `fuwa_test` 資料庫上執行（套用 01～03），包含正常流程與 BR 違規被拒絕的案例（後端檢查與直接改資料庫時 trigger 的拒絕）。
 
+### 全系統端對端測試
+
+系統啟動後（`./start.sh`），經由前端 proxy 走完顧客、工作人員、管理員的主要流程與 BR 違規案例（27 項）：
+
+```bash
+cd backend && .venv/bin/python scripts/e2e_smoke.py
+```
+
 ## 本機開發（不用 Docker 跑前後端）
 
 ```bash
