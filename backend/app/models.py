@@ -7,7 +7,7 @@ from decimal import Decimal
 
 from sqlalchemy import (Boolean, Date, ForeignKey, ForeignKeyConstraint, Integer, Numeric, SmallInteger,
                         String, Text, DateTime, func)
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 
 from app.db import Base
 
@@ -89,9 +89,10 @@ class Order(Base):
     discount_total: Mapped[Decimal] = mapped_column(Numeric(10, 0), default=0)
     tax: Mapped[Decimal] = mapped_column(Numeric(10, 0))
     shipping_fee: Mapped[Decimal] = mapped_column(Numeric(10, 0))
-    total: Mapped[Decimal] = mapped_column(Numeric(10, 0))
     status: Mapped[str] = mapped_column(String(10), default="received")
     paid_at: Mapped[datetime] = mapped_column(DateTime)
+    # 3NF：總額不存欄位，和檢視表 v_orders.total 用同一個公式計算（BR-09）
+    total: Mapped[Decimal] = column_property(subtotal - discount_total + tax + shipping_fee)
 
     user: Mapped[User] = relationship(lazy="joined")
     items: Mapped[list["OrderItem"]] = relationship(

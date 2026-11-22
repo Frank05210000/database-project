@@ -4,6 +4,7 @@
 --   * 正規化到 3NF：product_discount 移除重複的 discount_type／期間欄位（原本部分相依於 discount_code）；
 --     return_item 以 (order_id, item_no) 為主鍵、移除 return_id（原本 return_id → order_id 造成部分相依）。
 --     BR-13 期間不重疊改由 02_triggers.sql 的 trigger 檢查。
+--     orders 刪除 total 欄位（由 subtotal、discount_total、tax、shipping_fee 決定，屬遞移相依），改由檢視表 v_orders 計算。
 -- trigger 見 02_triggers.sql，初始資料見 03_seed.sql。
 
 -- ---------- 使用者與角色 ----------
@@ -68,11 +69,13 @@ CREATE TABLE orders (
     discount_total     NUMERIC(10,0)  NOT NULL DEFAULT 0 CHECK (discount_total >= 0),
     tax                NUMERIC(10,0)  NOT NULL CHECK (tax >= 0),
     shipping_fee       NUMERIC(10,0)  NOT NULL CHECK (shipping_fee >= 0),
-    total              NUMERIC(10,0)  NOT NULL CHECK (total >= 0),
     status             VARCHAR(10)    NOT NULL DEFAULT 'received'
                        CHECK (status IN ('received', 'processing', 'shipping',
                                          'closed', 'cancelled', 'returned')),
-    paid_at            TIMESTAMP      NOT NULL
+    paid_at            TIMESTAMP      NOT NULL,
+    -- 訂單總額不存欄位（BR-09：total = subtotal − discount_total + tax + shipping_fee 是遞移相依），
+    -- 由檢視表 v_orders 計算；這裡保證總額不為負
+    CHECK (subtotal - discount_total + tax + shipping_fee >= 0)
 );
 
 CREATE TABLE order_item (
@@ -178,3 +181,9 @@ CREATE TABLE system_setting (
     setting_value  VARCHAR(50)   NOT NULL,
     description    VARCHAR(100)
 );
+
+-- ---------- 檢視表 ----------
+-- 訂單總額（BR-09）：total = 商品小計 − 折扣合計（特殊活動＋季節性＋運費折扣）+ 稅 + 基本運費
+CREATE VIEW v_orders AS
+SELECT o.*, o.subtotal - o.discount_total + o.tax + o.shipping_fee AS total
+FROM orders o;

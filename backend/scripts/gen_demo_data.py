@@ -70,10 +70,10 @@ def place(user_id: int, items: list[tuple[int, int]], t: datetime, note: str) ->
     sql.append(f"\n-- 訂單 #{o.order_id}：{note}")
     sql.append(
         "INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, "
-        "subtotal, discount_total, tax, shipping_fee, total, status, paid_at) VALUES ("
+        "subtotal, discount_total, tax, shipping_fee, status, paid_at) VALUES ("
         + ", ".join(lit(v) for v in (o.order_id, o.user_id, o.order_time, o.recipient_name, o.recipient_phone,
                                     o.recipient_address, o.subtotal, o.discount_total, o.tax, o.shipping_fee,
-                                    o.total, "received", o.paid_at)) + ");")
+                                    "received", o.paid_at)) + ");")
     sql.append("INSERT INTO order_item (order_id, item_no, product_id, product_name, unit_price, quantity, event_discount) VALUES\n    "
                + ",\n    ".join("(" + ", ".join(lit(v) for v in (o.order_id, it.item_no, it.product_id, it.product_name,
                                                                   it.unit_price, it.quantity, it.event_discount)) + ")"

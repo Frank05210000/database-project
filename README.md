@@ -40,7 +40,7 @@
 
 | 檔案 | 內容 |
 |---|---|
-| `01_schema.sql` | 15 張表（沿用 Phase 2 並正規化到 3NF：`product_discount`、`return_item` 拆乾淨；新增 `return_request.refund_total`：核准退貨時依 BR-26 算好存起來） |
+| `01_schema.sql` | 15 張表（沿用 Phase 2 並正規化到 3NF：`product_discount`、`return_item` 拆乾淨、`orders.total` 改由檢視表 `v_orders` 計算；新增 `return_request.refund_total`：核准退貨時依 BR-26 算好存起來） |
 | `02_triggers.sql` | Phase 2 SRS 4.3 節的規則：BR-13 特殊活動折扣期間不重疊、BR-19 狀態流轉並自動寫狀態歷程、BR-21 角色、BR-24 評價、BR-25 退貨、BR-06 購物車庫存、BR-18 折扣代碼不可改、至少保留一位平台管理員 |
 | `03_seed.sql` | 系統參數、6 位使用者與角色、3 間商店、15 項商品、8 筆折扣政策 |
 | `04_demo_data.sql` | 示範交易：13 筆訂單（六種狀態都有）、明細、套用折扣、狀態歷程、4 筆退貨申請（部分核准、全部核准、拒絕、待審核）、評價、購物車。由 `backend/scripts/gen_demo_data.py` 用後端的金額計算服務產生，依業務流程執行，所有 trigger 都會檢查 |

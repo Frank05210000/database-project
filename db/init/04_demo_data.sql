@@ -5,7 +5,7 @@
 -- 狀態歷程（order_status_history）由 trigger 自動寫入，這裡只把變更時間調整為情境中的時間。
 
 -- 訂單 #1：alice 跨店（信義＋左營），未達免運，已完成
-INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, total, status, paid_at) VALUES (1, 4, '2026-09-05 10:12:00', '陳愛麗', '0912-345-678', '台北市中正區八德路一段 10 號', 810, 0, 41, 100, 951, 'received', '2026-09-05 10:12:00');
+INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, status, paid_at) VALUES (1, 4, '2026-09-05 10:12:00', '陳愛麗', '0912-345-678', '台北市中正區八德路一段 10 號', 810, 0, 41, 100, 'received', '2026-09-05 10:12:00');
 INSERT INTO order_item (order_id, item_no, product_id, product_name, unit_price, quantity, event_discount) VALUES
     (1, 1, 1, '彩虹啾啾球', 180, 2, 0),
     (1, 2, 6, '真皮項圈', 450, 1, 0);
@@ -24,7 +24,7 @@ INSERT INTO store_review (order_id, store_id, rating, comment, reviewed_at) VALU
 INSERT INTO store_review (order_id, store_id, rating, comment, reviewed_at) VALUES (1, 3, 4, '項圈質感很好，出貨稍慢。', '2026-09-09 10:12:00');
 
 -- 訂單 #2：bob 台中店，已完成
-INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, total, status, paid_at) VALUES (2, 5, '2026-09-12 14:30:00', '張寶博', '0922-111-222', '新北市板橋區文化路一段 20 號', 980, 0, 49, 100, 1129, 'received', '2026-09-12 14:30:00');
+INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, status, paid_at) VALUES (2, 5, '2026-09-12 14:30:00', '張寶博', '0922-111-222', '新北市板橋區文化路一段 20 號', 980, 0, 49, 100, 'received', '2026-09-12 14:30:00');
 INSERT INTO order_item (order_id, item_no, product_id, product_name, unit_price, quantity, event_discount) VALUES
     (2, 1, 3, '柔順梳毛刷', 320, 1, 0),
     (2, 2, 8, '雞肉凍乾零食', 220, 3, 0);
@@ -42,7 +42,7 @@ UPDATE order_status_history SET changed_at = '2026-09-15 02:30:00' WHERE order_i
 INSERT INTO store_review (order_id, store_id, rating, comment, reviewed_at) VALUES (2, 2, 4, '凍乾零食貓咪很愛，梳子也好用。', '2026-09-15 14:30:00');
 
 -- 訂單 #3：alice 買寵物籠，滿 1000 免運，已完成
-INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, total, status, paid_at) VALUES (3, 4, '2026-09-20 20:05:00', '陳愛麗', '0912-345-678', '台北市中正區八德路一段 10 號', 2800, 100, 140, 100, 2940, 'received', '2026-09-20 20:05:00');
+INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, status, paid_at) VALUES (3, 4, '2026-09-20 20:05:00', '陳愛麗', '0912-345-678', '台北市中正區八德路一段 10 號', 2800, 100, 140, 100, 'received', '2026-09-20 20:05:00');
 INSERT INTO order_item (order_id, item_no, product_id, product_name, unit_price, quantity, event_discount) VALUES
     (3, 1, 4, '豪華寵物籠', 2800, 1, 0);
 INSERT INTO order_discount (order_id, discount_code, amount) VALUES
@@ -59,7 +59,7 @@ UPDATE orders SET status = 'closed' WHERE order_id = 3;
 UPDATE order_status_history SET changed_at = '2026-09-24 20:05:00' WHERE order_id = 3 AND seq_no = (SELECT MAX(seq_no) FROM order_status_history WHERE order_id = 3);
 
 -- 訂單 #4：bob 信義店，已完成
-INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, total, status, paid_at) VALUES (4, 5, '2026-10-03 09:40:00', '張寶博', '0922-111-222', '新北市板橋區文化路一段 20 號', 630, 0, 32, 100, 762, 'received', '2026-10-03 09:40:00');
+INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, status, paid_at) VALUES (4, 5, '2026-10-03 09:40:00', '張寶博', '0922-111-222', '新北市板橋區文化路一段 20 號', 630, 0, 32, 100, 'received', '2026-10-03 09:40:00');
 INSERT INTO order_item (order_id, item_no, product_id, product_name, unit_price, quantity, event_discount) VALUES
     (4, 1, 5, '鮭魚主食罐', 65, 6, 0),
     (4, 2, 13, '羽毛逗貓棒', 120, 2, 0);
@@ -77,7 +77,7 @@ UPDATE order_status_history SET changed_at = '2026-10-05 09:40:00' WHERE order_i
 INSERT INTO store_review (order_id, store_id, rating, comment, reviewed_at) VALUES (4, 1, 3, '逗貓棒羽毛有點容易掉。', '2026-10-06 09:40:00');
 
 -- 訂單 #5：alice 左營店，已完成後部分退貨（已核准）
-INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, total, status, paid_at) VALUES (5, 4, '2026-10-10 16:20:00', '陳愛麗', '0912-345-678', '台北市中正區八德路一段 10 號', 1690, 100, 85, 100, 1775, 'received', '2026-10-10 16:20:00');
+INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, status, paid_at) VALUES (5, 4, '2026-10-10 16:20:00', '陳愛麗', '0912-345-678', '台北市中正區八德路一段 10 號', 1690, 100, 85, 100, 'received', '2026-10-10 16:20:00');
 INSERT INTO order_item (order_id, item_no, product_id, product_name, unit_price, quantity, event_discount) VALUES
     (5, 1, 10, '雲朵寵物床', 990, 1, 0),
     (5, 2, 12, '溫和洗毛精', 350, 2, 0);
@@ -101,7 +101,7 @@ UPDATE return_item SET refund_amount = 368 WHERE order_id = 5 AND item_no = 2;
 UPDATE product SET stock = stock + 1 WHERE product_id = 12;
 
 -- 訂單 #6：bob 下單後取消
-INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, total, status, paid_at) VALUES (6, 5, '2026-10-18 11:00:00', '張寶博', '0922-111-222', '新北市板橋區文化路一段 20 號', 380, 0, 19, 100, 499, 'received', '2026-10-18 11:00:00');
+INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, status, paid_at) VALUES (6, 5, '2026-10-18 11:00:00', '張寶博', '0922-111-222', '新北市板橋區文化路一段 20 號', 380, 0, 19, 100, 'received', '2026-10-18 11:00:00');
 INSERT INTO order_item (order_id, item_no, product_id, product_name, unit_price, quantity, event_discount) VALUES
     (6, 1, 11, '反光牽繩', 380, 1, 0);
 UPDATE product SET stock = stock - 1 WHERE product_id = 11;
@@ -111,7 +111,7 @@ UPDATE order_status_history SET changed_at = '2026-10-18 13:24:00' WHERE order_i
 UPDATE product SET stock = stock + 1 WHERE product_id = 11;
 
 -- 訂單 #7：alice 處理中全部退貨（核准後訂單改為 returned，運費一併退還）
-INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, total, status, paid_at) VALUES (7, 4, '2026-10-25 13:15:00', '陳愛麗', '0912-345-678', '台北市中正區八德路一段 10 號', 580, 0, 29, 100, 709, 'received', '2026-10-25 13:15:00');
+INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, status, paid_at) VALUES (7, 4, '2026-10-25 13:15:00', '陳愛麗', '0912-345-678', '台北市中正區八德路一段 10 號', 580, 0, 29, 100, 'received', '2026-10-25 13:15:00');
 INSERT INTO order_item (order_id, item_no, product_id, product_name, unit_price, quantity, event_discount) VALUES
     (7, 1, 2, '蝴蝶結髮飾', 150, 2, 0),
     (7, 2, 7, '保暖小毛帽', 280, 1, 0);
@@ -132,7 +132,7 @@ UPDATE orders SET status = 'returned' WHERE order_id = 7;
 UPDATE order_status_history SET changed_at = '2026-10-26 13:15:00' WHERE order_id = 7 AND seq_no = (SELECT MAX(seq_no) FROM order_status_history WHERE order_id = 7);
 
 -- 訂單 #8：alice 已完成，退貨申請被拒絕
-INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, total, status, paid_at) VALUES (8, 4, '2026-10-28 19:45:00', '陳愛麗', '0912-345-678', '台北市中正區八德路一段 10 號', 350, 0, 18, 100, 468, 'received', '2026-10-28 19:45:00');
+INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, status, paid_at) VALUES (8, 4, '2026-10-28 19:45:00', '陳愛麗', '0912-345-678', '台北市中正區八德路一段 10 號', 350, 0, 18, 100, 'received', '2026-10-28 19:45:00');
 INSERT INTO order_item (order_id, item_no, product_id, product_name, unit_price, quantity, event_discount) VALUES
     (8, 1, 12, '溫和洗毛精', 350, 1, 0);
 UPDATE product SET stock = stock - 1 WHERE product_id = 12;
@@ -150,7 +150,7 @@ INSERT INTO return_item (order_id, item_no, return_qty) VALUES (8, 1, 1);
 UPDATE return_request SET status = 'rejected', processed_by = 2, processed_at = '2026-11-07 19:45:00', reject_reason = '商品已開封使用，不符合退貨條件。' WHERE return_id = 3;
 
 -- 訂單 #9：bob 貓跳台 8 折＋主食罐買 2 送 1＋冬季 95 折，配送中
-INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, total, status, paid_at) VALUES (9, 5, '2026-11-05 08:50:00', '張寶博', '0922-111-222', '新北市板橋區文化路一段 20 號', 1875, 575, 70, 100, 1470, 'received', '2026-11-05 08:50:00');
+INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, status, paid_at) VALUES (9, 5, '2026-11-05 08:50:00', '張寶博', '0922-111-222', '新北市板橋區文化路一段 20 號', 1875, 575, 70, 100, 'received', '2026-11-05 08:50:00');
 INSERT INTO order_item (order_id, item_no, product_id, product_name, unit_price, quantity, event_discount) VALUES
     (9, 1, 5, '鮭魚主食罐', 65, 3, 65),
     (9, 2, 9, '貓抓板跳台', 1680, 1, 336);
@@ -169,7 +169,7 @@ UPDATE orders SET status = 'shipping' WHERE order_id = 9;
 UPDATE order_status_history SET changed_at = '2026-11-06 08:50:00' WHERE order_id = 9 AND seq_no = (SELECT MAX(seq_no) FROM order_status_history WHERE order_id = 9);
 
 -- 訂單 #10：alice 季節折扣疊加，配送中，有待審核的退貨申請
-INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, total, status, paid_at) VALUES (10, 4, '2026-11-12 21:10:00', '陳愛麗', '0912-345-678', '台北市中正區八德路一段 10 號', 2330, 258, 109, 100, 2281, 'received', '2026-11-12 21:10:00');
+INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, status, paid_at) VALUES (10, 4, '2026-11-12 21:10:00', '陳愛麗', '0912-345-678', '台北市中正區八德路一段 10 號', 2330, 258, 109, 100, 'received', '2026-11-12 21:10:00');
 INSERT INTO order_item (order_id, item_no, product_id, product_name, unit_price, quantity, event_discount) VALUES
     (10, 1, 8, '雞肉凍乾零食', 220, 2, 44),
     (10, 2, 14, '自動餵食器', 1890, 1, 0);
@@ -189,7 +189,7 @@ INSERT INTO return_request (return_id, order_id, requested_at, reason) VALUES (4
 INSERT INTO return_item (order_id, item_no, return_qty) VALUES (10, 2, 1);
 
 -- 訂單 #11：bob 三店各一件，處理中
-INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, total, status, paid_at) VALUES (11, 5, '2026-11-18 10:30:00', '張寶博', '0922-111-222', '新北市板橋區文化路一段 20 號', 950, 138, 41, 100, 953, 'received', '2026-11-18 10:30:00');
+INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, status, paid_at) VALUES (11, 5, '2026-11-18 10:30:00', '張寶博', '0922-111-222', '新北市板橋區文化路一段 20 號', 950, 138, 41, 100, 'received', '2026-11-18 10:30:00');
 INSERT INTO order_item (order_id, item_no, product_id, product_name, unit_price, quantity, event_discount) VALUES
     (11, 1, 1, '彩虹啾啾球', 180, 1, 0),
     (11, 2, 3, '柔順梳毛刷', 320, 1, 0),
@@ -205,7 +205,7 @@ UPDATE orders SET status = 'processing' WHERE order_id = 11;
 UPDATE order_status_history SET changed_at = '2026-11-18 22:30:00' WHERE order_id = 11 AND seq_no = (SELECT MAX(seq_no) FROM order_status_history WHERE order_id = 11);
 
 -- 訂單 #12：alice 新訂單，已接單
-INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, total, status, paid_at) VALUES (12, 4, '2026-11-20 15:00:00', '陳愛麗', '0912-345-678', '台北市中正區八德路一段 10 號', 1875, 715, 63, 100, 1323, 'received', '2026-11-20 15:00:00');
+INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, status, paid_at) VALUES (12, 4, '2026-11-20 15:00:00', '陳愛麗', '0912-345-678', '台北市中正區八德路一段 10 號', 1875, 715, 63, 100, 'received', '2026-11-20 15:00:00');
 INSERT INTO order_item (order_id, item_no, product_id, product_name, unit_price, quantity, event_discount) VALUES
     (12, 1, 5, '鮭魚主食罐', 65, 3, 65),
     (12, 2, 9, '貓抓板跳台', 1680, 1, 336);
@@ -219,7 +219,7 @@ UPDATE product SET stock = stock - 3 WHERE product_id = 5;
 UPDATE product SET stock = stock - 1 WHERE product_id = 9;
 
 -- 訂單 #13：bob 新訂單，已接單
-INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, total, status, paid_at) VALUES (13, 5, '2026-11-21 22:40:00', '張寶博', '0922-111-222', '新北市板橋區文化路一段 20 號', 360, 52, 15, 100, 423, 'received', '2026-11-21 22:40:00');
+INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, status, paid_at) VALUES (13, 5, '2026-11-21 22:40:00', '張寶博', '0922-111-222', '新北市板橋區文化路一段 20 號', 360, 52, 15, 100, 'received', '2026-11-21 22:40:00');
 INSERT INTO order_item (order_id, item_no, product_id, product_name, unit_price, quantity, event_discount) VALUES
     (13, 1, 13, '羽毛逗貓棒', 120, 3, 0);
 INSERT INTO order_discount (order_id, discount_code, amount) VALUES

@@ -45,7 +45,7 @@ PostgreSQL 16（db/init/：01 schema、02 trigger、03 種子資料）
 | BR-26 退款 | `services/orders.compute_refund / approve_return` | — |
 
 金額欄位約定：`orders.shipping_fee` 存基本運費，`orders.discount_total` 為特殊活動＋季節性＋運費折扣合計，
-`total = subtotal − discount_total + tax + shipping_fee`。BR-26 的「運費」指顧客實付運費（基本運費 − 運費折扣）。
+總額不存欄位，由 `v_orders.total = subtotal − discount_total + tax + shipping_fee` 計算。BR-26 的「運費」指顧客實付運費（基本運費 − 運費折扣）。
 部分數量退貨時，該項「扣除特殊活動折扣後的金額」依退貨數量比例計算。
 
 ### 正規化（3NF）
@@ -55,6 +55,9 @@ Phase 4 依課本正規化到 3NF，相對 Phase 2 的 schema 做了兩處拆分
   連帶移除 discount 上給複合外鍵用的 UNIQUE、EXCLUDE 與 btree_gist；BR-13 改由 trigger 檢查。
 - `return_item(order_id, item_no, return_qty, refund_amount)`：移除 return_id（return_id → order_id 是部分相依），
   因為 `return_request.order_id` 是 UNIQUE，order_id 就能識別退貨申請。
+- `orders` 刪除 `total`（BR-09 的 total = subtotal − discount_total + tax + shipping_fee 是遞移相依），
+  改為表層級 `CHECK (subtotal - discount_total + tax + shipping_fee >= 0)`，總額由檢視表 `v_orders.total` 計算；
+  ORM 以 `column_property` 用同一公式計算，API 仍回傳 total。
 
 ## 4. 工作拆分（並行、檔案不重疊）
 

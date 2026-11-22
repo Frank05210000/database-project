@@ -55,7 +55,7 @@ def checkout(db: Session, user: User, recipient_name: str, recipient_phone: str,
     order = Order(user_id=user.user_id, order_time=now, paid_at=now,
                   recipient_name=recipient_name, recipient_phone=recipient_phone,
                   recipient_address=recipient_address, subtotal=q.subtotal, discount_total=q.discount_total,
-                  tax=q.tax, shipping_fee=q.shipping_fee, total=q.total, status="received")
+                  tax=q.tax, shipping_fee=q.shipping_fee, status="received")
     for no, line in enumerate(q.lines, start=1):
         order.items.append(OrderItem(item_no=no, product_id=line.product_id, product_name=line.product_name,
                                      unit_price=line.unit_price, quantity=line.quantity,
@@ -68,6 +68,7 @@ def checkout(db: Session, user: User, recipient_name: str, recipient_phone: str,
     for ci in cart:
         db.delete(ci)
     db.flush()
+    db.refresh(order, ["total"])
     return order
 
 
