@@ -7,7 +7,7 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from app.db import set_actor
@@ -21,6 +21,24 @@ def conflict(msg: str) -> HTTPException:
     return HTTPException(status_code=409, detail=msg)
 
 
+def lock_order(db: Session, order: Order) -> Order:
+    """鎖定訂單列並重新讀取，讓狀態變更、取消、申請／審核退貨彼此排隊，不會用到過期的狀態。"""
+    db.execute(text("SELECT 1 FROM orders WHERE order_id = :o FOR UPDATE"), {"o": order.order_id})
+    db.refresh(order)
+    db.expire(order, ["return_request", "history"])
+    return order
+
+
+def restock(db: Session, items: list[tuple[int, int]]) -> None:
+    """回補庫存（BR-06）：以原子的 stock = stock + n 更新，依商品編號順序執行避免死結，不會覆蓋別人的扣庫存。"""
+    for pid, qty in sorted(items):
+        db.execute(text("UPDATE product SET stock = stock + :q WHERE product_id = :p"), {"q": qty, "p": pid})
+    for pid, _ in items:
+        p = db.get(Product, pid)
+        if p is not None:
+            db.expire(p, ["stock", "updated_at"])
+
+
 def cart_quote(db: Session, user: User, on: date | None = None) -> tuple[list[CartItem], PriceQuote]:
     items = list(db.scalars(select(CartItem).where(CartItem.user_id == user.user_id)
                             .order_by(CartItem.added_at, CartItem.product_id)))
@@ -31,6 +49,9 @@ def checkout(db: Session, user: User, recipient_name: str, recipient_phone: str,
              order_time: datetime | None = None) -> Order:
     """把購物車變成訂單。order_time 只給種子資料用，正常結帳為現在。"""
     set_actor(db, user.user_id)
+    # 同一位顧客的結帳排隊執行，避免同一個購物車同時產生兩筆訂單
+    db.execute(text("SELECT 1 FROM users WHERE user_id = :u FOR UPDATE"), {"u": user.user_id})
+    db.expire_all()
     now = order_time or datetime.now()
     cart = list(db.scalars(select(CartItem).where(CartItem.user_id == user.user_id)
                            .order_by(CartItem.added_at, CartItem.product_id)))
@@ -74,19 +95,20 @@ def checkout(db: Session, user: User, recipient_name: str, recipient_phone: str,
 
 def cancel_order(db: Session, order: Order, actor: User) -> Order:
     """顧客取消 received 的訂單並回補庫存（BR-19、OMS-F-010）。"""
+    lock_order(db, order)
     if order.status != "received":
         raise conflict(f"BR-19：只有 received 的訂單可以取消（目前為 {order.status}）")
     set_actor(db, actor.user_id)
     order.status = "cancelled"
-    for it in order.items:
-        it.product.stock += it.quantity
     db.flush()
+    restock(db, [(it.product_id, it.quantity) for it in order.items])
     db.expire(order, ["history"])
     return order
 
 
 def advance_status(db: Session, order: Order, actor: User, new_status: str) -> Order:
     """工作人員依序推進訂單狀態（BR-19、OMS-F-007）。"""
+    lock_order(db, order)
     expected = NEXT_STATUS.get(order.status)
     if expected is None or new_status != expected:
         raise conflict(f"BR-19：訂單狀態不可由 {order.status} 變更為 {new_status}"
@@ -102,6 +124,7 @@ def advance_status(db: Session, order: Order, actor: User, new_status: str) -> O
 
 def create_return(db: Session, order: Order, reason: str, items: list[tuple[int, int]]) -> ReturnRequest:
     """顧客申請退貨；items 為 (item_no, return_qty)（BR-25、OMS-F-011）。"""
+    lock_order(db, order)
     if order.status not in ("processing", "shipping", "closed"):
         raise conflict(f"BR-25：只有 processing、shipping、closed 的訂單可以申請退貨（目前為 {order.status}）")
     if order.return_request is not None:
@@ -162,6 +185,8 @@ def compute_refund(order: Order, rr: ReturnRequest) -> tuple[dict[int, Decimal],
 
 def approve_return(db: Session, rr: ReturnRequest, actor: User) -> ReturnRequest:
     """核准退貨：回補庫存、計算退款，全部退貨時訂單改為 returned（OMS-F-012）。"""
+    lock_order(db, rr.order)  # 先鎖訂單再鎖申請，與申請退貨、狀態變更的順序一致
+    db.refresh(rr)
     if rr.status != "pending":
         raise conflict(f"BR-25：退貨申請已處理（{rr.status}）")
     set_actor(db, actor.user_id)
@@ -170,9 +195,9 @@ def approve_return(db: Session, rr: ReturnRequest, actor: User) -> ReturnRequest
     by_no = {it.item_no: it for it in order.items}
     for ri in rr.items:
         ri.refund_amount = refunds[ri.item_no]
-        by_no[ri.item_no].product.stock += ri.return_qty
     rr.status, rr.processed_by, rr.processed_at, rr.refund_total = "approved", actor.user_id, datetime.now(), total
     db.flush()
+    restock(db, [(by_no[ri.item_no].product_id, ri.return_qty) for ri in rr.items])
     if full:
         order.status = "returned"
         db.flush()
@@ -181,6 +206,8 @@ def approve_return(db: Session, rr: ReturnRequest, actor: User) -> ReturnRequest
 
 
 def reject_return(db: Session, rr: ReturnRequest, actor: User, reject_reason: str) -> ReturnRequest:
+    lock_order(db, rr.order)
+    db.refresh(rr)
     if rr.status != "pending":
         raise conflict(f"BR-25：退貨申請已處理（{rr.status}）")
     if not reject_reason or not reject_reason.strip():

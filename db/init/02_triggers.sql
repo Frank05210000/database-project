@@ -60,6 +60,7 @@ CREATE TRIGGER orders_insert_check BEFORE INSERT ON orders
 
 -- ---------- 訂單狀態流轉（BR-19、BR-25） ----------
 CREATE OR REPLACE FUNCTION trg_orders_status_check() RETURNS trigger AS $$
+DECLARE v_actor INT;
 BEGIN
     IF NEW.status = OLD.status THEN
         RETURN NEW;
@@ -72,9 +73,24 @@ BEGIN
             OR (NEW.status = 'returned' AND OLD.status IN ('processing', 'shipping', 'closed'))) THEN
         RAISE EXCEPTION 'BR-19：訂單狀態不可由 % 變更為 %', OLD.status, NEW.status;
     END IF;
+    -- BR-21：操作者由後端以 SET LOCAL app.user_id 帶入；取消只能由下單的顧客，其餘只能由工作人員
+    v_actor := fn_actor();
+    IF v_actor IS NULL THEN
+        RAISE EXCEPTION 'BR-21：變更訂單狀態須以 app.user_id 指定操作者';
+    END IF;
+    IF NEW.status = 'cancelled' AND v_actor <> NEW.user_id THEN
+        RAISE EXCEPTION 'BR-21：只有下單的顧客可以取消訂單';
+    END IF;
+    IF NEW.status <> 'cancelled' AND NOT fn_has_role(v_actor, 'staff') THEN
+        RAISE EXCEPTION 'BR-21：只有工作人員可以更新訂單狀態';
+    END IF;
     IF NEW.status IN ('processing', 'shipping', 'closed') AND EXISTS (
             SELECT 1 FROM return_request WHERE order_id = NEW.order_id AND status = 'pending') THEN
         RAISE EXCEPTION 'BR-25：訂單有待審核的退貨申請，不可更新狀態';
+    END IF;
+    IF NEW.status = 'returned' AND NOT EXISTS (
+            SELECT 1 FROM return_request WHERE order_id = NEW.order_id AND status = 'approved') THEN
+        RAISE EXCEPTION 'BR-19：沒有已核准的退貨申請，不可改為 returned';
     END IF;
     IF NEW.status = 'returned' AND EXISTS (
             SELECT 1 FROM order_item oi
@@ -128,8 +144,11 @@ CREATE TRIGGER return_request_insert BEFORE INSERT ON return_request
 
 CREATE OR REPLACE FUNCTION trg_return_request_update() RETURNS trigger AS $$
 BEGIN
-    IF OLD.status <> 'pending' AND NEW.status IS DISTINCT FROM OLD.status THEN
+    IF OLD.status <> 'pending' THEN
         RAISE EXCEPTION 'BR-25：退貨申請已處理（%），不可再變更', OLD.status;
+    END IF;
+    IF NEW.order_id <> OLD.order_id THEN
+        RAISE EXCEPTION 'BR-25：退貨申請不可改到其他訂單';
     END IF;
     IF NEW.status <> 'pending' AND NOT fn_has_role(NEW.processed_by, 'staff') THEN
         RAISE EXCEPTION 'BR-21：只有工作人員可以處理退貨申請';
@@ -147,14 +166,18 @@ BEGIN
     IF NEW.return_qty > v_qty THEN
         RAISE EXCEPTION 'BR-25：退貨數量 % 超過購買數量 %', NEW.return_qty, v_qty;
     END IF;
-    SELECT status INTO v_status FROM return_request WHERE order_id = NEW.order_id;
-    IF v_status <> 'pending' THEN
-        RAISE EXCEPTION 'BR-25：已處理的退貨申請不可再新增商品';
+    -- 新增明細或修改退貨數量時，申請必須還在待審核（核准時只會寫入 refund_amount）
+    IF TG_OP = 'INSERT' OR NEW.return_qty <> OLD.return_qty OR NEW.order_id <> OLD.order_id
+       OR NEW.item_no <> OLD.item_no THEN
+        SELECT status INTO v_status FROM return_request WHERE order_id = NEW.order_id;
+        IF v_status <> 'pending' THEN
+            RAISE EXCEPTION 'BR-25：已處理的退貨申請不可再新增或修改商品';
+        END IF;
     END IF;
     RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER return_item_insert BEFORE INSERT ON return_item
+CREATE TRIGGER return_item_insert BEFORE INSERT OR UPDATE ON return_item
     FOR EACH ROW EXECUTE FUNCTION trg_return_item_insert();
 
 -- ---------- 商店評價（BR-24，選配） ----------
@@ -170,7 +193,7 @@ BEGIN
     RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER store_review_insert BEFORE INSERT ON store_review
+CREATE TRIGGER store_review_insert BEFORE INSERT OR UPDATE OF order_id, store_id ON store_review
     FOR EACH ROW EXECUTE FUNCTION trg_store_review_insert();
 
 -- ---------- 折扣代碼建立後不可修改（BR-18） ----------
@@ -247,6 +270,18 @@ BEGIN
     END IF;
     RETURN NULL;
 END $$ LANGUAGE plpgsql;
+
+-- 修改角色或啟用狀態前先取得同一把鎖，讓兩位管理員同時停用彼此時排隊檢查（避免 write skew）
+CREATE OR REPLACE FUNCTION trg_admin_change_lock() RETURNS trigger AS $$
+BEGIN
+    PERFORM pg_advisory_xact_lock(hashtext('fuwa_keep_one_admin'));
+    RETURN COALESCE(NEW, OLD);
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER user_role_admin_lock BEFORE DELETE ON user_role
+    FOR EACH ROW EXECUTE FUNCTION trg_admin_change_lock();
+CREATE TRIGGER users_admin_lock BEFORE UPDATE OF is_active ON users
+    FOR EACH ROW EXECUTE FUNCTION trg_admin_change_lock();
 
 CREATE CONSTRAINT TRIGGER user_role_keep_admin AFTER DELETE ON user_role
     DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION trg_keep_one_admin();
