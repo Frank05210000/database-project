@@ -1,0 +1,46 @@
+# FUWA FUWA e-Shop：一個指令啟動 DB + 後端 + 前端
+#   docker compose up --build
+# 前端 http://localhost:5173 ，後端 API 文件 http://localhost:8001/docs ，DB localhost:5433
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: fuwa
+      POSTGRES_PASSWORD: fuwa
+      POSTGRES_DB: fuwa
+      TZ: Asia/Taipei
+      PGTZ: Asia/Taipei
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fuwa -d fuwa"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://fuwa:fuwa@db:5432/fuwa
+      JWT_SECRET: fuwafuwa-dev-secret-change-me
+      TZ: Asia/Taipei
+    ports:
+      - "8001:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./fuwafuwa-shop
+    environment:
+      VITE_PROXY_TARGET: http://backend:8000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

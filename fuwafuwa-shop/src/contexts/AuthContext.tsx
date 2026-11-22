@@ -1,89 +1,82 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import {
-  User,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  GoogleAuthProvider,
-  signInWithPopup,
-  updateProfile,
-} from 'firebase/auth';
-import { auth } from '../libs/firebase';
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
+import { get, post, tokenStore } from '../api/client';
+import type { LoginResponse, Role, User } from '../api/types';
+
+export interface RegisterData {
+  loginid: string;
+  name: string;
+  password: string;
+  email: string;
+  address: string;
+  phone?: string;
+}
 
 interface AuthContextType {
+  user: User | null;
+  /** 與舊程式相容的別名 */
   currentUser: User | null;
   loading: boolean;
-  signup: (email: string, password: string, displayName?: string) => Promise<void>;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
+  login: (loginid: string, password: string) => Promise<User>;
+  register: (data: RegisterData) => Promise<User>;
+  logout: () => void;
+  refresh: () => Promise<void>;
+  hasRole: (role: Role) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within an AuthProvider');
+  return ctx;
 };
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 註冊新用戶
-  const signup = async (email: string, password: string, displayName?: string) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    if (displayName && userCredential.user) {
-      await updateProfile(userCredential.user, { displayName });
+  const refresh = useCallback(async () => {
+    if (!tokenStore.get()) {
+      setUser(null);
+      return;
     }
-  };
-
-  // 登入
-  const login = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
-  };
-
-  // 登出
-  const logout = async () => {
-    await signOut(auth);
-  };
-
-  // Google 登入
-  const loginWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-  };
-
-  // 監聽認證狀態變化
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      setLoading(false);
-    });
-
-    return unsubscribe;
+    try {
+      setUser(await get<User>('/auth/me'));
+    } catch {
+      tokenStore.set(null);
+      setUser(null);
+    }
   }, []);
 
-  const value: AuthContextType = {
-    currentUser,
-    loading,
-    signup,
-    login,
-    logout,
-    loginWithGoogle,
+  useEffect(() => {
+    refresh().finally(() => setLoading(false));
+    const onUnauthorized = () => setUser(null);
+    window.addEventListener('fuwa:unauthorized', onUnauthorized);
+    return () => window.removeEventListener('fuwa:unauthorized', onUnauthorized);
+  }, [refresh]);
+
+  const login = async (loginid: string, password: string) => {
+    const res = await post<LoginResponse>('/auth/login', { loginid, password });
+    tokenStore.set(res.access_token);
+    setUser(res.user);
+    return res.user;
   };
 
+  const register = async (data: RegisterData) => {
+    await post<User>('/auth/register', data);
+    return login(data.loginid, data.password);
+  };
+
+  const logout = () => {
+    tokenStore.set(null);
+    setUser(null);
+  };
+
+  const hasRole = (role: Role) => !!user?.roles.includes(role);
+
   return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, currentUser: user, loading, login, register, logout, refresh, hasRole }}>
+      {children}
     </AuthContext.Provider>
   );
 };

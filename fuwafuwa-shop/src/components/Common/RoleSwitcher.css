@@ -1,0 +1,5 @@
+.role-switcher { display: flex; align-items: center; gap: 8px; font-size: 14px; flex-wrap: wrap; }
+.role-switcher__link { padding: 4px 10px; border-radius: 999px; color: #8a5a44; text-decoration: none; background: #fff3ea; border: 1px solid #f0d5c4; }
+.role-switcher__link.active { background: #d36b55; color: #fff; border-color: #d36b55; }
+.role-switcher__user { color: #666; }
+.role-switcher__logout { padding: 5px 12px; font-size: 12px; background: #e57368; color: #fff; border: none; border-radius: 6px; cursor: pointer; }

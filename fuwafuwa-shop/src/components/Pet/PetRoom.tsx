@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePet } from '../../hooks/usePet';
 import './PetRoom.css';
 
 interface InteractionButton {
@@ -17,8 +18,12 @@ const interactionButtons: InteractionButton[] = [
 export const PetRoom: React.FC = () => {
   const [currentAnimation, setCurrentAnimation] = useState<string>('neutral');
   const [isPetAnimating, setIsPetAnimating] = useState(false);
+  const pet = usePet();
 
-  const handleInteraction = (animation: string) => {
+  const handleInteraction = (action: string, animation: string) => {
+    if (action === 'feed') pet.feed();
+    else if (action === 'play') pet.play();
+    else pet.brush();
     setIsPetAnimating(true);
     setCurrentAnimation(animation);
     
@@ -41,7 +46,8 @@ export const PetRoom: React.FC = () => {
             <button
               key={button.id}
               className="pet-room__control-btn"
-              onClick={() => handleInteraction(button.animation)}
+              onClick={() => handleInteraction(button.action, button.animation)}
+              title={`💖 ${pet.pet.happiness}`}
             >
               <img src={`/images/${button.icon}`} alt={button.action} />
             </button>

@@ -1,83 +1,50 @@
-import { useState, useCallback, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { UserPet } from '../types';
-import {
-  createOrInitPet,
-  feedPet as feedPetService,
-  playWithPet as playWithPetService,
-  brushPet as brushPetService,
-} from '../services/petService';
+import { useCallback, useState } from 'react';
+
+/** 寵物小房間的狀態只是裝飾，存在瀏覽器 localStorage，不經過後端。 */
+export interface PetState {
+  happiness: number;
+  hunger: number;
+  energy: number;
+  totalInteractions: number;
+}
+
+const KEY = 'fuwa_pet';
+const DEFAULT: PetState = { happiness: 50, hunger: 50, energy: 50, totalInteractions: 0 };
+const clamp = (n: number) => Math.max(0, Math.min(100, n));
+
+const load = (): PetState => {
+  try {
+    const raw = localStorage.getItem(KEY);
+    return raw ? { ...DEFAULT, ...JSON.parse(raw) } : DEFAULT;
+  } catch {
+    return DEFAULT;
+  }
+};
 
 export const usePet = () => {
-  const { currentUser: user } = useAuth();
-  const [pet, setPet] = useState<UserPet | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [pet, setPet] = useState<PetState>(load);
 
-  // 加載寵物數據
-  const loadPet = useCallback(async () => {
-    if (!user) {
-      setPet(null);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const petData = await createOrInitPet(user.uid);
-      setPet(petData);
-    } catch (error) {
-      console.error('Failed to load pet:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  // 用戶登入後加載寵物
-  useEffect(() => {
-    loadPet();
-  }, [loadPet]);
-
-  // 餵食寵物
-  const feed = useCallback(async () => {
-    if (!user || !pet) return;
-
-    try {
-      const updatedPet = await feedPetService(user.uid);
-      setPet(updatedPet);
-    } catch (error) {
-      console.error('Failed to feed pet:', error);
-    }
-  }, [user, pet]);
-
-  // 與寵物玩耍
-  const play = useCallback(async () => {
-    if (!user || !pet) return;
-
-    try {
-      const updatedPet = await playWithPetService(user.uid);
-      setPet(updatedPet);
-    } catch (error) {
-      console.error('Failed to play with pet:', error);
-    }
-  }, [user, pet]);
-
-  // 梳理寵物
-  const brush = useCallback(async () => {
-    if (!user || !pet) return;
-
-    try {
-      const updatedPet = await brushPetService(user.uid);
-      setPet(updatedPet);
-    } catch (error) {
-      console.error('Failed to brush pet:', error);
-    }
-  }, [user, pet]);
+  const apply = useCallback((delta: Partial<PetState>) => {
+    setPet((prev) => {
+      const next: PetState = {
+        happiness: clamp(prev.happiness + (delta.happiness ?? 0)),
+        hunger: clamp(prev.hunger + (delta.hunger ?? 0)),
+        energy: clamp(prev.energy + (delta.energy ?? 0)),
+        totalInteractions: prev.totalInteractions + 1,
+      };
+      try {
+        localStorage.setItem(KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
 
   return {
     pet,
-    loading,
-    feed,
-    play,
-    brush,
-    reload: loadPet,
+    feed: () => apply({ hunger: -20, happiness: 5 }),
+    play: () => apply({ happiness: 15, energy: -10 }),
+    brush: () => apply({ happiness: 10 }),
   };
 };

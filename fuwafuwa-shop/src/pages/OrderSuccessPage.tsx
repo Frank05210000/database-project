@@ -1,39 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { errorMessage, formatDateTime, formatMoney, ORDER_STATUS_LABEL } from '../api/client';
+import type { Order } from '../api/types';
 import { getOrder } from '../services/orderService';
-import { Order } from '../types';
+import { imageFallback } from '../utils/product';
+import { useLanguage } from '../i18n';
 import './OrderSuccessPage.css';
 
 const OrderSuccessPage: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [order, setOrder] = useState<Order | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadOrder = async () => {
-      if (!orderId) {
-        navigate('/');
-        return;
-      }
-
-      try {
-        const orderData = await getOrder(orderId);
-        setOrder(orderData);
-      } catch (error) {
-        console.error('Failed to load order:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadOrder();
-  }, [orderId, navigate]);
+    getOrder(Number(orderId))
+      .then(setOrder)
+      .catch((e) => setError(errorMessage(e)))
+      .finally(() => setLoading(false));
+  }, [orderId]);
 
   if (loading) {
     return (
       <div className="order-success-page">
-        <div className="loading">載入中...</div>
+        <div className="loading">{t.product.loading}</div>
       </div>
     );
   }
@@ -43,6 +35,7 @@ const OrderSuccessPage: React.FC = () => {
       <div className="order-success-page">
         <div className="error-container">
           <h2>找不到訂單</h2>
+          {error && <p>{error}</p>}
           <button onClick={() => navigate('/')}>返回首頁</button>
         </div>
       </div>
@@ -53,64 +46,66 @@ const OrderSuccessPage: React.FC = () => {
     <div className="order-success-page">
       <div className="success-container">
         <div className="success-icon">✓</div>
-        <h1>訂單已成功建立！</h1>
-        <p className="success-message">感謝您的購買，我們將盡快為您處理訂單</p>
+        <h1>付款成功，訂單已成立！</h1>
+        <p className="success-message">{t.messages.thankYou}我們將盡快為您處理訂單</p>
 
         <div className="order-info">
           <div className="info-row">
-            <span className="label">訂單編號：</span>
-            <span className="value">{order.orderNumber}</span>
+            <span className="label">{t.orders.orderNo}：</span>
+            <span className="value">#{order.order_id}</span>
           </div>
           <div className="info-row">
-            <span className="label">訂單金額：</span>
-            <span className="value amount">NT$ {order.total}</span>
+            <span className="label">訂單狀態：</span>
+            <span className="value">{ORDER_STATUS_LABEL[order.status] ?? order.status}</span>
           </div>
           <div className="info-row">
-            <span className="label">付款方式：</span>
-            <span className="value">
-              {order.paymentMethod === 'credit_card' ? '信用卡' : '貨到付款'}
-            </span>
+            <span className="label">付款時間：</span>
+            <span className="value">{formatDateTime(order.paid_at)}</span>
+          </div>
+          <div className="info-row">
+            <span className="label">{t.orders.total}：</span>
+            <span className="value amount">{formatMoney(order.total)}</span>
           </div>
         </div>
 
         <div className="order-items">
-          <h2>訂單商品</h2>
-          {order.items.map((item, index) => (
-            <div key={index} className="item-row">
-              <img src={item.imageUrl} alt={item.productName} />
+          <h2>{t.checkout.items}</h2>
+          {order.items.map((item) => (
+            <div key={item.item_no} className="item-row">
+              <img src={item.image_url ?? '/images/All.png'} alt={item.product_name} onError={imageFallback(null)} />
               <div className="item-info">
-                <h3>{item.productName}</h3>
-                <p>數量: {item.quantity}</p>
+                <h3>{item.product_name}</h3>
+                <p>
+                  {formatMoney(item.unit_price)} × {item.quantity}
+                </p>
               </div>
-              <div className="item-price">NT$ {item.subtotal}</div>
+              <div className="item-price">{formatMoney(item.line_subtotal)}</div>
             </div>
           ))}
         </div>
 
         <div className="shipping-info">
           <h2>配送資訊</h2>
-          <p><strong>收件人：</strong>{order.shippingAddress.fullName}</p>
-          <p><strong>電話：</strong>{order.shippingAddress.phone}</p>
+          <p>
+            <strong>收件人：</strong>
+            {order.recipient_name}
+          </p>
+          <p>
+            <strong>電話：</strong>
+            {order.recipient_phone}
+          </p>
           <p>
             <strong>地址：</strong>
-            {order.shippingAddress.postalCode} {order.shippingAddress.city}
-            {order.shippingAddress.district} {order.shippingAddress.address}
+            {order.recipient_address}
           </p>
         </div>
 
-        {order.notes && (
-          <div className="order-notes">
-            <h2>訂單備註</h2>
-            <p>{order.notes}</p>
-          </div>
-        )}
-
         <div className="action-buttons">
-          <button className="btn-primary" onClick={() => navigate('/my-orders')}>
-            查看我的訂單
+          <button className="btn-primary" onClick={() => navigate(`/order/${order.order_id}`)}>
+            查看訂單詳情
           </button>
           <button className="btn-secondary" onClick={() => navigate('/')}>
-            繼續購物
+            {t.cart.continueShopping}
           </button>
         </div>
       </div>

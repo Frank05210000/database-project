@@ -6,3 +6,5 @@ export { default as OrderPage } from './OrderPage';
 export { default as OrderSuccessPage } from './OrderSuccessPage';
 export { default as MyOrdersPage } from './MyOrdersPage';
 export { default as OrderDetailPage } from './OrderDetailPage';
+export { default as StoresPage } from './StoresPage';
+export { default as StoreDetailPage } from './StoreDetailPage';

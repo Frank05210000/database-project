@@ -1,0 +1,423 @@
+/* 顧客購物介面共用的小元件（沿用 globals.css 的配色變數） */
+
+.fw-input,
+.fw-select,
+.fw-textarea {
+  border: 2px solid var(--color-border-orange);
+  border-radius: var(--border-radius-small);
+  background: var(--color-white);
+  color: var(--color-text-brown);
+  padding: 8px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+}
+
+.fw-input:focus,
+.fw-select:focus,
+.fw-textarea:focus {
+  border-color: var(--color-accent-red);
+  box-shadow: 0 0 0 3px rgba(232, 141, 103, 0.2);
+}
+
+.fw-textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.fw-btn {
+  background: var(--color-accent-orange);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--border-radius-small);
+  padding: 8px 16px;
+  font-weight: var(--font-weight-bold);
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.fw-btn:hover:not(:disabled) {
+  background: var(--color-accent-red);
+  transform: translateY(-1px);
+}
+
+.fw-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.fw-btn--ghost {
+  background: transparent;
+  color: var(--color-text-brown);
+  border: 2px solid var(--color-border-orange);
+}
+
+.fw-btn--ghost:hover:not(:disabled) {
+  background: var(--color-accent-orange);
+  color: var(--color-white);
+}
+
+.fw-btn--danger {
+  background: var(--color-accent-red);
+}
+
+.fw-error {
+  background: #fdecea;
+  color: #b3261e;
+  border: 1px solid #f5c2c0;
+  border-radius: var(--border-radius-small);
+  padding: 8px 12px;
+  font-size: 14px;
+  margin: 8px 0;
+}
+
+.fw-success {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+  border-radius: var(--border-radius-small);
+  padding: 8px 12px;
+  font-size: 14px;
+  margin: 8px 0;
+}
+
+.fw-muted {
+  opacity: 0.7;
+  font-size: 13px;
+}
+
+.fw-event-badge {
+  display: inline-block;
+  background: var(--color-accent-red);
+  color: var(--color-white);
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+
+.fw-panel {
+  background: var(--color-white);
+  border: 3px solid var(--color-border-orange);
+  border-radius: var(--border-radius-medium);
+  padding: var(--spacing-lg);
+  box-shadow: 0 4px 12px var(--color-shadow);
+  margin-bottom: var(--spacing-lg);
+}
+
+.fw-panel h2 {
+  font-size: 20px;
+  margin-bottom: var(--spacing-md);
+}
+
+/* ---------- 首頁：優惠橫幅與篩選列 ---------- */
+.fw-discount-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(90deg, #ffd9c2, #ffe9d6);
+  border: 2px dashed var(--color-accent-orange);
+  border-radius: var(--border-radius-medium);
+  padding: 10px 14px;
+  margin-bottom: var(--spacing-md);
+  font-size: 14px;
+}
+
+.fw-discount-banner__title {
+  font-weight: var(--font-weight-bold);
+  margin-right: 4px;
+}
+
+.fw-discount-chip {
+  background: var(--color-white);
+  border: 1px solid var(--color-border-orange);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 13px;
+}
+
+.fw-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.fw-toolbar form {
+  display: flex;
+  gap: 8px;
+  flex: 1 1 260px;
+}
+
+.fw-toolbar .fw-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------- 金額明細 ---------- */
+.fw-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fw-breakdown__row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+}
+
+.fw-breakdown__row--discount span:last-child {
+  color: #2e7d32;
+}
+
+.fw-breakdown__row--total {
+  border-top: 2px dashed var(--color-border-orange);
+  padding-top: 8px;
+  margin-top: 4px;
+  font-size: 20px;
+  font-weight: var(--font-weight-bold);
+}
+
+.fw-breakdown__row--total span:last-child {
+  color: var(--color-accent-red);
+}
+
+.fw-discount-list {
+  list-style: none;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.fw-discount-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ---------- 訂單狀態時間軸 ---------- */
+.fw-timeline {
+  list-style: none;
+  border-left: 3px solid var(--color-border-orange);
+  margin-left: 8px;
+  padding-left: 18px;
+}
+
+.fw-timeline li {
+  position: relative;
+  padding: 4px 0 12px;
+}
+
+.fw-timeline li::before {
+  content: '';
+  position: absolute;
+  left: -27px;
+  top: 8px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-accent-orange);
+  border: 3px solid var(--color-white);
+  box-shadow: 0 0 0 2px var(--color-border-orange);
+}
+
+.fw-timeline__status {
+  font-weight: var(--font-weight-bold);
+}
+
+/* ---------- 訂單狀態標籤（後端狀態碼） ---------- */
+.status-received { background: #fff3e0; color: #e65100; }
+.status-processing { background: #e3f2fd; color: #1565c0; }
+.status-shipping { background: #ede7f6; color: #5e35b1; }
+.status-closed { background: #e8f5e9; color: #2e7d32; }
+.status-cancelled { background: #fbe9e7; color: #c62828; }
+.status-returned { background: #eceff1; color: #455a64; }
+
+.fw-return-tag {
+  display: inline-block;
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 2px 10px;
+  background: #fff8e1;
+  color: #8d6e00;
+  border: 1px solid #ffe082;
+}
+
+/* ---------- 表格 ---------- */
+.fw-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.fw-table th,
+.fw-table td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid #f3dcc6;
+  vertical-align: middle;
+}
+
+.fw-table th {
+  background: var(--color-bg-light-cream);
+}
+
+.fw-table img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.fw-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.fw-form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.fw-stars {
+  color: #f5a623;
+  letter-spacing: 1px;
+}
+
+/* ---------- 商店頁 ---------- */
+.store-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--spacing-lg) var(--spacing-md) var(--spacing-xl);
+}
+
+.store-page h1 {
+  font-size: 28px;
+  margin-bottom: var(--spacing-md);
+}
+
+.store-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.store-card {
+  background: var(--color-white);
+  border: 3px solid var(--color-border-orange);
+  border-radius: var(--border-radius-medium);
+  padding: var(--spacing-md);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.store-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px var(--color-shadow);
+}
+
+.store-card h3 {
+  font-size: 18px;
+}
+
+.store-reviews {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.store-reviews li {
+  border-bottom: 1px dashed #f3dcc6;
+  padding-bottom: 8px;
+}
+
+/* ---------- 商品詳情：數量與加購 ---------- */
+.fw-qty {
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid var(--color-border-orange);
+  border-radius: var(--border-radius-small);
+  overflow: hidden;
+  background: var(--color-white);
+}
+
+.fw-qty button {
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: var(--color-bg-light-cream);
+  color: var(--color-text-brown);
+  font-size: 18px;
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+
+.fw-qty button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.fw-qty input {
+  width: 52px;
+  height: 34px;
+  border: none;
+  text-align: center;
+  font-size: 16px;
+  color: var(--color-text-brown);
+  -moz-appearance: textfield;
+}
+
+.fw-also-bought {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.fw-mini-card {
+  background: var(--color-white);
+  border: 2px solid var(--color-border-orange);
+  border-radius: var(--border-radius-small);
+  padding: 8px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.fw-mini-card img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+/* 導覽列文字連結 */
+.navigation-bar__link {
+  background: var(--color-bg-light-cream);
+  border: 2px solid var(--color-accent-orange);
+  border-radius: var(--border-radius-medium);
+  padding: 6px 12px;
+  margin-right: var(--spacing-sm);
+  font-size: 15px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-brown);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.navigation-bar__link:hover {
+  background: var(--color-accent-orange);
+  color: var(--color-white);
+}

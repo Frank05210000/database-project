@@ -1,5 +1,8 @@
 import React from 'react';
-import { Product } from '../../types';
+import type { Product } from '../../api/types';
+import { formatMoney } from '../../api/client';
+import { useLanguage } from '../../i18n';
+import { categoryImage, eventBadge, imageFallback, productImage } from '../../utils/product';
 import './ProductCard.css';
 
 interface ProductCardProps {
@@ -7,45 +10,40 @@ interface ProductCardProps {
   onClick?: (product: Product) => void;
 }
 
-const getCategoryImage = (category: string): string => {
-  const categoryImageMap: Record<string, string> = {
-    food: 'can.png',
-    toy: 'ball.png',
-    accessory: 'collar.png',
-    brush: 'brush.png',
-  };
-  return categoryImageMap[category] || 'All.png';
-};
-
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
-  const handleClick = () => {
-    if (onClick) {
-      onClick(product);
-    }
-  };
+  const { language, t } = useLanguage();
+  const badge = eventBadge(product.event_discount, language);
 
   return (
-    <div className="product-card" onClick={handleClick}>
+    <div className="product-card" onClick={() => onClick?.(product)}>
       <div className="product-card__image-container">
-        <img 
-          src={product.images[0]} 
+        {badge && (
+          <span className="fw-event-badge product-card__event" title={product.event_discount?.description}>
+            {badge}
+          </span>
+        )}
+        <img
+          src={productImage(product)}
           alt={product.name}
           className="product-card__image"
+          onError={imageFallback(product.category)}
         />
       </div>
-      
+
       <div className="product-card__content">
         <h3 className="product-card__name">{product.name}</h3>
+        <div className="product-card__store">{product.store_name}</div>
         <div className="product-card__footer">
-          <span className="product-card__price">¥{product.price}</span>
+          <span className="product-card__price">{formatMoney(product.price)}</span>
           <div className="product-card__category-badge">
-            <img 
-              src={`/images/${getCategoryImage(product.category)}`} 
-              alt={product.category}
+            <img
+              src={categoryImage(product.category)}
+              alt={product.category ?? ''}
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           </div>
         </div>
+        {product.stock === 0 && <div className="product-card__soldout">{t.product.outOfStock}</div>}
       </div>
     </div>
   );

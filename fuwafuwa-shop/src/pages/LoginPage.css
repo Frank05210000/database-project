@@ -322,3 +322,34 @@
     width: 100%;
   }
 }
+
+/* 示範帳號提示 */
+.login-demo {
+  margin-top: 16px;
+  background: #fff8ef;
+  border: 1px dashed #e88d67;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.login-demo__title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.login-demo__item {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 4px 0;
+  cursor: pointer;
+  color: inherit;
+  font-size: 13px;
+}
+
+.login-demo__item:hover code {
+  text-decoration: underline;
+}

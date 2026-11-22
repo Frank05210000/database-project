@@ -1,10 +1,26 @@
 import React, { useEffect, useRef, useMemo, useState } from 'react';
 import Matter from 'matter-js';
-import { CartItem } from '../../types';
+import type { CartLine } from '../../api/types';
+import { categoryImage, productImage } from '../../utils/product';
+
+// 圖片快取：避免每一格都重新建立 Image，載入失敗時改用分類圖示
+const imageCache = new Map<string, HTMLImageElement>();
+const getImage = (url: string, fallback: string): HTMLImageElement => {
+  let img = imageCache.get(url);
+  if (!img) {
+    img = new Image();
+    img.onerror = () => {
+      if (img && !img.src.endsWith(fallback)) img.src = fallback;
+    };
+    img.src = url;
+    imageCache.set(url, img);
+  }
+  return img;
+};
 import './BasketVisualizer.css';
 
 interface BasketVisualizerProps {
-  cartItems: CartItem[];
+  cartItems: CartLine[];
 }
 
 export const BasketVisualizer: React.FC<BasketVisualizerProps> = ({ cartItems }) => {
@@ -19,7 +35,7 @@ export const BasketVisualizer: React.FC<BasketVisualizerProps> = ({ cartItems })
   // Create a serialized key for cart items to detect changes
   const cartItemsKey = useMemo(() => {
     return cartItems
-      .map(item => `${item.product.id}:${item.quantity}`)
+      .map(item => `${item.product.product_id}:${item.quantity}`)
       .sort()
       .join('|');
   }, [cartItems]);
@@ -132,7 +148,7 @@ export const BasketVisualizer: React.FC<BasketVisualizerProps> = ({ cartItems })
     // Create or update bodies for each item
     cartItems.forEach((cartItem) => {
       for (let i = 0; i < cartItem.quantity; i++) {
-        const uniqueId = `${cartItem.product.id}-${i}`;
+        const uniqueId = `${cartItem.product.product_id}-${i}`;
         newBodyIds.add(uniqueId);
         
         // Check if body already exists
@@ -154,7 +170,8 @@ export const BasketVisualizer: React.FC<BasketVisualizerProps> = ({ cartItems })
           });
           
           // Add custom property to store image
-          (body as any).productImage = cartItem.product.images[0];
+          (body as any).productImage = productImage(cartItem.product);
+          (body as any).fallbackImage = categoryImage(cartItem.product.category);
           
           Matter.Composite.add(engineRef.current!.world, body);
           currentBodies.set(uniqueId, body);
@@ -187,8 +204,8 @@ export const BasketVisualizer: React.FC<BasketVisualizerProps> = ({ cartItems })
       bodies.forEach((body) => {
         const imageUrl = (body as any).productImage;
         if (imageUrl && context) {
-          const img = new Image();
-          img.src = imageUrl;
+          const img = getImage(imageUrl, (body as any).fallbackImage);
+          if (!img.complete || img.naturalWidth === 0) return;
           
           context.save();
           context.translate(body.position.x, body.position.y);
