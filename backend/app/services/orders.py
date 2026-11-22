@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from app.db import set_actor
 from app.models import (CartItem, Order, OrderDiscount, OrderItem, Product, ReturnItem, ReturnRequest, User)
 from app.services.pricing import PriceQuote, quote, round_half_up
+from app.clock import tw_now, tw_today  # noqa: F401
 
 NEXT_STATUS = {"received": "processing", "processing": "shipping", "shipping": "closed"}
 
@@ -42,7 +43,7 @@ def restock(db: Session, items: list[tuple[int, int]]) -> None:
 def cart_quote(db: Session, user: User, on: date | None = None) -> tuple[list[CartItem], PriceQuote]:
     items = list(db.scalars(select(CartItem).where(CartItem.user_id == user.user_id)
                             .order_by(CartItem.added_at, CartItem.product_id)))
-    return items, quote(db, [(ci.product, ci.quantity) for ci in items], on or date.today())
+    return items, quote(db, [(ci.product, ci.quantity) for ci in items], on or tw_today())
 
 
 def checkout(db: Session, user: User, recipient_name: str, recipient_phone: str, recipient_address: str,
@@ -52,7 +53,7 @@ def checkout(db: Session, user: User, recipient_name: str, recipient_phone: str,
     # 同一位顧客的結帳排隊執行，避免同一個購物車同時產生兩筆訂單
     db.execute(text("SELECT 1 FROM users WHERE user_id = :u FOR UPDATE"), {"u": user.user_id})
     db.expire_all()
-    now = order_time or datetime.now()
+    now = order_time or tw_now()
     cart = list(db.scalars(select(CartItem).where(CartItem.user_id == user.user_id)
                            .order_by(CartItem.added_at, CartItem.product_id)))
     if not cart:
@@ -195,7 +196,7 @@ def approve_return(db: Session, rr: ReturnRequest, actor: User) -> ReturnRequest
     by_no = {it.item_no: it for it in order.items}
     for ri in rr.items:
         ri.refund_amount = refunds[ri.item_no]
-    rr.status, rr.processed_by, rr.processed_at, rr.refund_total = "approved", actor.user_id, datetime.now(), total
+    rr.status, rr.processed_by, rr.processed_at, rr.refund_total = "approved", actor.user_id, tw_now(), total
     db.flush()
     restock(db, [(by_no[ri.item_no].product_id, ri.return_qty) for ri in rr.items])
     if full:
@@ -213,6 +214,6 @@ def reject_return(db: Session, rr: ReturnRequest, actor: User, reject_reason: st
     if not reject_reason or not reject_reason.strip():
         raise conflict("OMS-F-012：拒絕退貨須填寫拒絕原因")
     set_actor(db, actor.user_id)
-    rr.status, rr.processed_by, rr.processed_at, rr.reject_reason = "rejected", actor.user_id, datetime.now(), reject_reason.strip()
+    rr.status, rr.processed_by, rr.processed_at, rr.reject_reason = "rejected", actor.user_id, tw_now(), reject_reason.strip()
     db.flush()
     return rr

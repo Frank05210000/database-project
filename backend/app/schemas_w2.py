@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.models import Discount, Order, Product, ReturnRequest, User
 from app.services import orders as svc
 from app.services.pricing import event_discount_for
+from app.clock import tw_now, tw_today  # noqa: F401
 
 
 # ---------- 請求 ----------
@@ -65,12 +66,12 @@ def product_json(db: Session, p: Product, on: date | None = None) -> dict:
         "name": p.name, "description": p.description, "category": p.category, "image_url": p.image_url,
         "price": int(p.price), "stock": p.stock, "is_listed": p.is_listed,
         "created_at": p.created_at, "updated_at": p.updated_at,
-        "event_discount": event_discount_json(event_discount_for(db, p.product_id, on or date.today())),
+        "event_discount": event_discount_json(event_discount_for(db, p.product_id, on or tw_today())),
     }
 
 
 def cart_json(db: Session, user: User) -> dict:
-    today = date.today()
+    today = tw_today()
     items, q = svc.cart_quote(db, user, today)
     return {
         "items": [{"product": product_json(db, ci.product, today), "quantity": ci.quantity,

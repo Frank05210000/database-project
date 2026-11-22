@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app import deps
 from app.db import get_db
 from app.models import Discount, OrderDiscount, Product, ProductDiscount, User
+from app.clock import tw_now, tw_today  # noqa: F401
 
 router = APIRouter()
 
@@ -53,7 +54,7 @@ def format_discounts(db: Session, discounts: list[Discount]) -> list[dict[str, A
     ).all()
     used_map = {code: count for code, count in used_rows}
 
-    today = date.today()
+    today = tw_today()
     results = []
     for d in discounts:
         prods = [
@@ -173,7 +174,7 @@ def validate_discount_rules(
 @router.get("/active")
 def get_active_discounts(db: Session = Depends(get_db)):
     """首頁展示今天有效的折扣（公開無須登入）。"""
-    today = date.today()
+    today = tw_today()
     discounts = list(
         db.scalars(
             select(Discount)

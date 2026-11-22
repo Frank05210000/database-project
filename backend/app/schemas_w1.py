@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.models import Product, User
 from app.services.pricing import event_discount_for
+from app.clock import tw_now, tw_today  # noqa: F401
 
 Role = Literal["customer", "staff", "admin"]
 
@@ -46,7 +47,7 @@ class ProfileIn(BaseModel):
 
 # ---------- 商品 ----------
 def event_discount_out(db: Session, product_id: int, on: date | None = None) -> dict | None:
-    d = event_discount_for(db, product_id, on or date.today())
+    d = event_discount_for(db, product_id, on or tw_today())
     if d is None:
         return None
     return {

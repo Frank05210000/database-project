@@ -11,6 +11,7 @@ from app import deps
 from app.db import get_db
 from app.models import Order, ReturnRequest, Store, User
 from app.services.pricing import round_half_up
+from app.clock import tw_now, tw_today  # noqa: F401
 
 router = APIRouter()
 
@@ -28,7 +29,7 @@ def get_sales_report(
     if period not in ("day", "week", "month"):
         raise HTTPException(422, "period 必須是 day、week 或 month")
 
-    today = date.today()
+    today = tw_today()
     if date_to is None:
         date_to = today
     if date_from is None:

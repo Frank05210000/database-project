@@ -11,6 +11,7 @@ from app.db import get_db
 from app.deps import get_optional_user, require_staff
 from app.models import OrderItem, Product, Store, User
 from app.schemas_w1 import product_out
+from app.clock import tw_now, tw_today  # noqa: F401
 
 router = APIRouter()
 
@@ -66,7 +67,7 @@ def list_products(q: str | None = None, category: str | None = None, store_id: i
         "price_asc": (Product.price.asc(), Product.product_id.asc()),
         "price_desc": (Product.price.desc(), Product.product_id.asc()),
     }[sort]
-    today = date.today()
+    today = tw_today()
     return [product_out(db, p, today) for p in db.scalars(stmt.order_by(*order))]
 
 
@@ -95,7 +96,7 @@ def get_product(product_id: int, db: Session = Depends(get_db),
     p = get_product_or_404(db, product_id)
     if not p.is_listed and not is_staff(user):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "找不到這項商品")
-    today = date.today()
+    today = tw_today()
     out = product_out(db, p, today)
     out["also_bought"] = [product_out(db, x, today) for x in also_bought(db, product_id)]
     return out

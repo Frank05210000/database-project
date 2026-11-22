@@ -34,6 +34,19 @@
 | `bob` | `customer123` | 顧客 | 同上 |
 | `carol` | `customer123` | 顧客（已停用） | 無法登入，用來示範停用帳號 |
 
+## 線上版（Vercel＋Neon）
+
+- 網址：https://fuwafuwa-eshop.vercel.app （示範帳號同上）
+- 前端由 Vercel 以 Vite 建置；`api/index.py` 把 `/api/*` 交給 `backend/` 的 FastAPI（Python serverless 函式）
+- 資料庫為 Neon PostgreSQL（Vercel Marketplace），已套用 `db/init/*.sql`，時區設為 Asia/Taipei
+- 重新部署：`vercel deploy --prod`
+- 重設線上資料庫為示範資料（連線字串由 `vercel env pull` 取得，存在 `.env.local`，不進版控）：
+
+```bash
+set -a; . ./.env.local; set +a
+(echo "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"; cat db/init/0*.sql) | docker run --rm -i postgres:16-alpine psql "$DATABASE_URL_UNPOOLED" -v ON_ERROR_STOP=1 -q
+```
+
 ## 資料庫
 
 `db/init/` 依檔名順序在資料庫第一次啟動時執行：

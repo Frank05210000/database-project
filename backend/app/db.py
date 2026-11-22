@@ -2,10 +2,12 @@ from collections.abc import Generator
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.pool import NullPool
 
 from app import config
 
-engine = create_engine(config.DATABASE_URL, pool_pre_ping=True)
+engine = (create_engine(config.DATABASE_URL, poolclass=NullPool) if config.SERVERLESS
+          else create_engine(config.DATABASE_URL, pool_pre_ping=True))
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 

@@ -1,0 +1,15 @@
+phase1
+phase2
+slides
+參考範例
+docs
+db
+.agy-staff
+backend/.venv
+backend/tests
+backend/scripts
+**/node_modules
+**/__pycache__
+**/.pytest_cache
+fuwafuwa-shop/dist
+fuwafuwa-shop/reference

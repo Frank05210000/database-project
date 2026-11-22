@@ -1,0 +1,23 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "npm ci --prefix fuwafuwa-shop",
+  "buildCommand": "npm run build --prefix fuwafuwa-shop",
+  "outputDirectory": "fuwafuwa-shop/dist",
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "backend/app/**",
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/((?!images/|assets/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
