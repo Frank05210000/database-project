@@ -3,16 +3,16 @@ import type { EventDiscount } from '../api/types';
 import type { ReactionType } from '../types';
 
 const CATEGORY_IMAGE: Record<string, string> = {
-  food: 'can.png',
-  toy: 'ball.png',
-  accessory: 'collar.png',
-  care: 'brush.png',
-  home: 'cage.png',
+  food: 'can.webp',
+  toy: 'ball.webp',
+  accessory: 'collar.webp',
+  care: 'brush.webp',
+  home: 'cage.webp',
 };
 
 /** 分類圖示（篩選按鈕、徽章、圖片載入失敗時的備用圖） */
 export const categoryImage = (category: string | null | undefined): string =>
-  `/images/${CATEGORY_IMAGE[category ?? ''] ?? 'All.png'}`;
+  `/images/${CATEGORY_IMAGE[category ?? ''] ?? 'All.webp'}`;
 
 export const productImage = (p: { image_url: string | null; category?: string | null }): string =>
   p.image_url || categoryImage(p.category);

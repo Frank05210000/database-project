@@ -68,7 +68,7 @@ export const CartPage: React.FC = () => {
         {items.length === 0 ? (
           <div className="cart-page__empty">
             <p>{loading ? t.product.loading : t.cart.empty}</p>
-            <img src="/images/dog.png" alt="Empty" className="cart-page__empty-icon" />
+            <img src="/images/dog.webp" alt="Empty" className="cart-page__empty-icon" />
             <div>
               <button className="fw-btn" onClick={() => navigate('/')}>
                 {t.cart.continueShopping}
@@ -142,7 +142,7 @@ export const CartPage: React.FC = () => {
             )}
 
             <button className="cart-page__checkout-btn" onClick={() => navigate('/order')} title={t.cart.checkout}>
-              <img src="/images/checkout.png" alt={t.cart.checkout} />
+              <img src="/images/checkout.webp" alt={t.cart.checkout} />
             </button>
           </>
         )}

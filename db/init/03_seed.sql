@@ -32,21 +32,21 @@ INSERT INTO store (name, address, email, phone) VALUES
 
 -- ---------- 商品（分類：food、toy、accessory、care、home） ----------
 INSERT INTO product (store_id, name, description, category, image_url, price, stock, is_listed) VALUES
-    (1, '彩虹啾啾球',     '會發出啾啾聲的彈力球，耐咬材質，適合中小型犬。',           'toy',       '/images/ball.png',                         180,  60, TRUE),
-    (1, '蝴蝶結髮飾',     '柔軟緞面蝴蝶結，附安全夾，拍照必備。',                     'accessory', '/images/bow.png',                          150,  80, TRUE),
-    (2, '柔順梳毛刷',     '圓頭針梳不傷皮膚，梳開打結毛髮、減少掉毛。',               'care',      '/images/brush.png',                        320,  45, TRUE),
-    (2, '豪華寵物籠',     '雙門設計、底盤可抽出清洗，適合兔子與小型犬。',             'home',      '/images/cage.png',                        2800,  12, TRUE),
-    (1, '鮭魚主食罐',     '真實鮭魚肉塊，無穀配方，每罐 85g。',                       'food',      '/images/can.png',                           65, 200, TRUE),
-    (3, '真皮項圈',       '植鞣牛皮製作，附名牌扣環，可調整長度。',                   'accessory', '/images/collar.png',                       450,  35, TRUE),
-    (3, '保暖小毛帽',     '針織毛線帽，冬天出門保暖又可愛。',                         'accessory', '/images/hat.png',                          280,  40, TRUE),
-    (2, '雞肉凍乾零食',   '100% 雞胸肉低溫凍乾，訓練獎勵好幫手。',                   'food',      '/images/products/freeze_dried_chicken.png', 220, 120, TRUE),
-    (1, '貓抓板跳台',     '三層貓跳台結合劍麻抓柱，讓貓咪盡情攀爬。',                 'home',      '/images/products/cat_tower.png',          1680,  15, TRUE),
-    (3, '雲朵寵物床',     '超柔軟絨毛睡窩，可拆洗，給毛孩一夜好眠。',                 'home',      '/images/products/pet_bed.png',             990,  25, TRUE),
-    (2, '反光牽繩',       '夜間反光織帶，手把加厚防勒。',                             'accessory', '/images/products/leash.png',               380,  50, TRUE),
-    (3, '溫和洗毛精',     '燕麥配方，低敏溫和，洗後毛髮蓬鬆柔順。',                   'care',      '/images/products/shampoo.png',             350,  70, TRUE),
-    (1, '羽毛逗貓棒',     '天然羽毛加鈴鐺，陪貓咪玩出好心情。',                       'toy',       '/images/products/teaser_wand.png',         120,  90, TRUE),
-    (2, '自動餵食器',     '定時定量出糧，App 遠端控制，出門也安心。',                 'home',      '/images/products/feeder.png',             1890,  10, TRUE),
-    (3, '舊款陶瓷水碗',   '已停產的舊款水碗。',                                       'home',      '/images/can.png',                          250,   0, FALSE);
+    (1, '彩虹啾啾球',     '會發出啾啾聲的彈力球，耐咬材質，適合中小型犬。',           'toy',       '/images/ball.webp',                         180,  60, TRUE),
+    (1, '蝴蝶結髮飾',     '柔軟緞面蝴蝶結，附安全夾，拍照必備。',                     'accessory', '/images/bow.webp',                          150,  80, TRUE),
+    (2, '柔順梳毛刷',     '圓頭針梳不傷皮膚，梳開打結毛髮、減少掉毛。',               'care',      '/images/brush.webp',                        320,  45, TRUE),
+    (2, '豪華寵物籠',     '雙門設計、底盤可抽出清洗，適合兔子與小型犬。',             'home',      '/images/cage.webp',                        2800,  12, TRUE),
+    (1, '鮭魚主食罐',     '真實鮭魚肉塊，無穀配方，每罐 85g。',                       'food',      '/images/can.webp',                           65, 200, TRUE),
+    (3, '真皮項圈',       '植鞣牛皮製作，附名牌扣環，可調整長度。',                   'accessory', '/images/collar.webp',                       450,  35, TRUE),
+    (3, '保暖小毛帽',     '針織毛線帽，冬天出門保暖又可愛。',                         'accessory', '/images/hat.webp',                          280,  40, TRUE),
+    (2, '雞肉凍乾零食',   '100% 雞胸肉低溫凍乾，訓練獎勵好幫手。',                   'food',      '/images/products/freeze_dried_chicken.webp', 220, 120, TRUE),
+    (1, '貓抓板跳台',     '三層貓跳台結合劍麻抓柱，讓貓咪盡情攀爬。',                 'home',      '/images/products/cat_tower.webp',          1680,  15, TRUE),
+    (3, '雲朵寵物床',     '超柔軟絨毛睡窩，可拆洗，給毛孩一夜好眠。',                 'home',      '/images/products/pet_bed.webp',             990,  25, TRUE),
+    (2, '反光牽繩',       '夜間反光織帶，手把加厚防勒。',                             'accessory', '/images/products/leash.webp',               380,  50, TRUE),
+    (3, '溫和洗毛精',     '燕麥配方，低敏溫和，洗後毛髮蓬鬆柔順。',                   'care',      '/images/products/shampoo.webp',             350,  70, TRUE),
+    (1, '羽毛逗貓棒',     '天然羽毛加鈴鐺，陪貓咪玩出好心情。',                       'toy',       '/images/products/teaser_wand.webp',         120,  90, TRUE),
+    (2, '自動餵食器',     '定時定量出糧，App 遠端控制，出門也安心。',                 'home',      '/images/products/feeder.webp',             1890,  10, TRUE),
+    (3, '舊款陶瓷水碗',   '已停產的舊款水碗。',                                       'home',      '/images/can.webp',                          250,   0, FALSE);
 
 -- ---------- 折扣政策（DMS） ----------
 -- 折扣代碼由系統產生（BR-18），後端用 discount_code_seq 產生「類型前綴-流水號」

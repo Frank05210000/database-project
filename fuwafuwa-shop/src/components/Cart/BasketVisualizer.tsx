@@ -235,7 +235,7 @@ export const BasketVisualizer: React.FC<BasketVisualizerProps> = ({ cartItems })
 
         {/* Pet Character */}
         <div className="basket-visualizer__pet">
-          <img src="/images/dog.png" alt="Pet" />
+          <img src="/images/dog.webp" alt="Pet" />
           {totalItems > 0 && (
             <div className="basket-visualizer__pet-reaction">
               {totalItems > 5 ? '😍' : '😊'}

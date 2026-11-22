@@ -141,7 +141,7 @@ def test_checkout_preview_and_happy_path(client, db):
     assert o["discounts"][0]["discount_type"] == "special_event" and o["discounts"][0]["amount"] == 128
     items = {i["product_id"]: i for i in o["items"]}
     assert items[3]["event_discount"] == 128 and items[3]["line_subtotal"] == 640
-    assert items[3]["store_name"] == "FUWA FUWA 台中公益店" and items[3]["image_url"] == "/images/brush.png"
+    assert items[3]["store_name"] == "FUWA FUWA 台中公益店" and items[3]["image_url"] == "/images/brush.webp"
     assert [h["status"] for h in o["history"]] == ["received"] and o["history"][0]["changed_by_name"] == "陳愛麗"
     assert o["next_status"] == "processing" and o["can_cancel"] and not o["can_return"]
     assert o["return_request"] is None

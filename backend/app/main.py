@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.errors import install_error_handlers
@@ -8,6 +8,21 @@ app = FastAPI(title="FUWA FUWA e-Shop API", version="1.0.0",
               description="多門市寵物用品電子商店：AAS / PMS / SCS / OMS / DMS / RSS / STS")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 install_error_handlers(app)
+
+# 訪客瀏覽的公開資料（商品、商店、進行中的折扣）讓 CDN 快取 30 秒，過期後先回舊資料再背景更新。
+# 有登入（帶 Authorization）的請求一律不快取，庫存與價格仍由加入購物車、結帳時即時檢查。
+PUBLIC_PREFIXES = ("/api/products", "/api/stores", "/api/discounts/active")
+
+
+@app.middleware("http")
+async def public_cache(request: Request, call_next):
+    response = await call_next(request)
+    if (request.method == "GET" and response.status_code == 200
+            and "authorization" not in request.headers
+            and request.url.path.startswith(PUBLIC_PREFIXES)):
+        response.headers["Cache-Control"] = "public, s-maxage=30, stale-while-revalidate=300"
+        response.headers["Vary"] = "Authorization"
+    return response
 
 app.include_router(auth.router, prefix="/api/auth", tags=["AAS 帳號"])
 app.include_router(admin.router, prefix="/api/admin", tags=["AAS 平台管理"])

@@ -12,27 +12,27 @@ export const ReactionPreview: React.FC<ReactionPreviewProps> = ({ reactionType }
   
   const reactionConfig = {
     hungry: {
-      image: '/images/dog_heart_press_1.png',
+      image: '/images/dog_heart_press_1.webp',
       emoji: '🤤',
       text: t.reactions.hungry,
     },
     excited: {
-      image: '/images/dog_heart_press_2.png',
+      image: '/images/dog_heart_press_2.webp',
       emoji: '✨',
       text: t.reactions.excited,
     },
     happy: {
-      image: '/images/dog.png',
+      image: '/images/dog.webp',
       emoji: '💖',
       text: t.reactions.happy,
     },
     curious: {
-      image: '/images/dog.png',
+      image: '/images/dog.webp',
       emoji: '👀',
       text: t.reactions.curious,
     },
     neutral: {
-      image: '/images/dog.png',
+      image: '/images/dog.webp',
       emoji: '😊',
       text: t.reactions.neutral,
     },

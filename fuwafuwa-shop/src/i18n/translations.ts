@@ -183,13 +183,13 @@ export const translations: Record<Language, Translations> = {
     },
     product: {
       categories: {
-        all: 'All.png',
-        food: 'can.png',
-        toy: 'ball.png',
-        accessory: 'collar.png',
-        care: 'brush.png',
-        home: 'cage.png',
-        favorites: 'dog_heart_press_2.png',
+        all: 'All.webp',
+        food: 'can.webp',
+        toy: 'ball.webp',
+        accessory: 'collar.webp',
+        care: 'brush.webp',
+        home: 'cage.webp',
+        favorites: 'dog_heart_press_2.webp',
       },
       categoryDescriptions: {
         all: '所有商品',
@@ -344,13 +344,13 @@ export const translations: Record<Language, Translations> = {
     },
     product: {
       categories: {
-        all: 'All.png',
-        food: 'can.png',
-        toy: 'ball.png',
-        accessory: 'collar.png',
-        care: 'brush.png',
-        home: 'cage.png',
-        favorites: 'dog_heart_press_2.png',
+        all: 'All.webp',
+        food: 'can.webp',
+        toy: 'ball.webp',
+        accessory: 'collar.webp',
+        care: 'brush.webp',
+        home: 'cage.webp',
+        favorites: 'dog_heart_press_2.webp',
       },
       categoryDescriptions: {
         all: 'All Products',

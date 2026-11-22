@@ -10,9 +10,9 @@ interface InteractionButton {
 }
 
 const interactionButtons: InteractionButton[] = [
-  { id: 'brush', icon: 'brush.png', action: 'brush', animation: 'happy' },
-  { id: 'ball', icon: 'ball.png', action: 'play', animation: 'excited' },
-  { id: 'can', icon: 'can.png', action: 'feed', animation: 'hungry' },
+  { id: 'brush', icon: 'brush.webp', action: 'brush', animation: 'happy' },
+  { id: 'ball', icon: 'ball.webp', action: 'play', animation: 'excited' },
+  { id: 'can', icon: 'can.webp', action: 'feed', animation: 'hungry' },
 ];
 
 export const PetRoom: React.FC = () => {
@@ -38,7 +38,7 @@ export const PetRoom: React.FC = () => {
     <div className="pet-room">
       {/* Background */}
       <div className="pet-room__background">
-        <img src="/images/electric_chicken_background.png" alt="Room Background" />
+        <img src="/images/electric_chicken_background.webp" alt="Room Background" />
         
         {/* Interaction Buttons */}
         <div className="pet-room__controls">
@@ -56,7 +56,7 @@ export const PetRoom: React.FC = () => {
 
         {/* Pet Character */}
         <div className={`pet-room__pet ${isPetAnimating ? 'animating' : ''}`}>
-          <img src="/images/dog.png" alt="Pet" />
+          <img src="/images/dog.webp" alt="Pet" />
           {isPetAnimating && (
             <div className="pet-room__pet-reaction">
               {currentAnimation === 'happy' && '💖'}

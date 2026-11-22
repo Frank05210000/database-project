@@ -72,7 +72,7 @@ const OrderSuccessPage: React.FC = () => {
           <h2>{t.checkout.items}</h2>
           {order.items.map((item) => (
             <div key={item.item_no} className="item-row">
-              <img src={item.image_url ?? '/images/All.png'} alt={item.product_name} onError={imageFallback(null)} />
+              <img src={item.image_url ?? '/images/All.webp'} alt={item.product_name} onError={imageFallback(null)} />
               <div className="item-info">
                 <h3>{item.product_name}</h3>
                 <p>

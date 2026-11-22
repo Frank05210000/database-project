@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.deps import require_admin, require_customer
 from app.models import Order, OrderItem, Product, Store, StoreReview, User
-from app.schemas_w1 import Email, product_out
+from app.schemas_w1 import Email, products_out
 
 router = APIRouter()
 
@@ -66,7 +66,7 @@ def get_store(store_id: int, db: Session = Depends(get_db)):
     out = store_out(s, store_stats(db)[store_id])
     products = db.scalars(select(Product).where(Product.store_id == store_id, Product.is_listed.is_(True))
                           .order_by(Product.product_id))
-    out["products"] = [product_out(db, p) for p in products]
+    out["products"] = products_out(db, products)
     reviews = db.scalars(select(StoreReview).where(StoreReview.store_id == store_id)
                          .order_by(StoreReview.reviewed_at.desc(), StoreReview.order_id.desc()))
     out["reviews"] = [review_out(r) for r in reviews]

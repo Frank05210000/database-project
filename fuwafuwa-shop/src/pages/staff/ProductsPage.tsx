@@ -10,8 +10,8 @@ export const CATEGORY_LABEL: Record<string, string> = {
   food: '食品', toy: '玩具', accessory: '配件', care: '清潔保養', home: '居家',
 };
 const CATEGORIES = Object.keys(CATEGORY_LABEL);
-const BUILTIN_IMAGES = ['ball', 'bow', 'brush', 'cage', 'can', 'collar', 'hat', 'dog'].map((n) => `/images/${n}.png`);
-const FALLBACK_IMG = '/images/shop_item.png';
+const BUILTIN_IMAGES = ['ball', 'bow', 'brush', 'cage', 'can', 'collar', 'hat', 'dog'].map((n) => `/images/${n}.webp`);
+const FALLBACK_IMG = '/images/shop_item.webp';
 
 const emptyForm = (storeId: number): ProductInput => ({
   store_id: storeId, name: '', description: '', category: 'food', image_url: '', price: 0, stock: 0, is_listed: true,
@@ -232,7 +232,7 @@ export default function ProductsPage() {
               <div className="bo-img-preview">
                 <img src={f.image_url || FALLBACK_IMG} alt="預覽" onError={(e) => { e.currentTarget.src = FALLBACK_IMG; }} />
                 <div style={{ flex: 1 }}>
-                  <input className="bo-input" placeholder="/images/products/xxx.png" value={f.image_url} onChange={(e) => setForm({ image_url: e.target.value })} />
+                  <input className="bo-input" placeholder="/images/products/xxx.webp" value={f.image_url} onChange={(e) => setForm({ image_url: e.target.value })} />
                   <div className="bo-img-picks">
                     {imageChoices.map((src) => (
                       <button type="button" key={src} title={src} className={f.image_url === src ? 'active' : ''} onClick={() => setForm({ image_url: src })}>

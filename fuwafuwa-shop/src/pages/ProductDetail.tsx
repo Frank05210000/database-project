@@ -193,14 +193,14 @@ export const ProductDetail: React.FC = () => {
           disabled={product.stock === 0 || adding}
           title={t.product.addToCart}
         >
-          <img src="/images/buy_button.png" alt={t.product.addToCart} />
+          <img src="/images/buy_button.webp" alt={t.product.addToCart} />
         </button>
         <button
           className="product-detail__dog-heart"
           onClick={() => setIsFavorited(toggleFavorite(product.product_id))}
           aria-label="Add to favorites"
         >
-          <img src={isFavorited ? '/images/dog_heart_press_2.png' : '/images/dog_heart_press_1.png'} alt="heart" />
+          <img src={isFavorited ? '/images/dog_heart_press_2.webp' : '/images/dog_heart_press_1.webp'} alt="heart" />
         </button>
       </div>
     </div>

@@ -22,7 +22,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ languageSwitcher }
       <div className="navigation-bar__left">{languageSwitcher}</div>
       <div className="navigation-bar__center">
         <button onClick={() => navigate('/')} className="navigation-bar__logo-button" aria-label={t.nav.home}>
-          <img src="/images/fuwa_title.png" alt="FUWA FUWA Shop" className="navigation-bar__logo" />
+          <img src="/images/fuwa_title.webp" alt="FUWA FUWA Shop" className="navigation-bar__logo" />
         </button>
       </div>
       <div className="navigation-bar__right">
@@ -49,7 +49,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ languageSwitcher }
             onClick={() => navigate('/cart')}
             title={t.nav.cart}
           >
-            <img src="/images/shopping-cart-icon.png" alt={t.nav.cart} />
+            <img src="/images/shopping-cart-icon.webp" alt={t.nav.cart} />
             {itemCount > 0 && <span className="navigation-bar__badge">{itemCount}</span>}
           </button>
         )}

@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from sqlalchemy.orm import Session
 
 from app.models import Product, User
-from app.services.pricing import event_discount_for
+from app.services.pricing import event_discount_for, event_discounts_for
 from app.clock import tw_now, tw_today  # noqa: F401
 
 Role = Literal["customer", "staff", "admin"]
@@ -46,8 +46,12 @@ class ProfileIn(BaseModel):
 
 
 # ---------- 商品 ----------
-def event_discount_out(db: Session, product_id: int, on: date | None = None) -> dict | None:
-    d = event_discount_for(db, product_id, on or tw_today())
+_UNSET = object()
+
+
+def event_discount_out(db: Session, product_id: int, on: date | None = None, d=_UNSET) -> dict | None:
+    if d is _UNSET:
+        d = event_discount_for(db, product_id, on or tw_today())
     if d is None:
         return None
     return {
@@ -58,12 +62,22 @@ def event_discount_out(db: Session, product_id: int, on: date | None = None) -> 
     }
 
 
-def product_out(db: Session, p: Product, on: date | None = None) -> dict:
-    """契約 §5 的 Product 物件；金額一律為整數。"""
+def product_out(db: Session, p: Product, on: date | None = None, events: dict | None = None) -> dict:
+    """契約 §5 的 Product 物件；金額一律為整數。events 為預先批次查好的 {product_id: 特殊活動折扣}。"""
+    event = (event_discount_out(db, p.product_id, on) if events is None
+             else event_discount_out(db, p.product_id, on, events.get(p.product_id)))
     return {
         "product_id": p.product_id, "store_id": p.store_id, "store_name": p.store.name,
         "name": p.name, "description": p.description, "category": p.category, "image_url": p.image_url,
         "price": int(p.price), "stock": p.stock, "is_listed": p.is_listed,
         "created_at": p.created_at, "updated_at": p.updated_at,
-        "event_discount": event_discount_out(db, p.product_id, on),
+        "event_discount": event,
     }
+
+
+def products_out(db: Session, products, on: date | None = None) -> list[dict]:
+    """商品列表序列化：特殊活動折扣一次批次查詢。"""
+    products = list(products)
+    on = on or tw_today()
+    events = event_discounts_for(db, [p.product_id for p in products], on)
+    return [product_out(db, p, on, events) for p in products]

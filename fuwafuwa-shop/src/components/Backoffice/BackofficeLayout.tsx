@@ -12,7 +12,7 @@ export const BackofficeLayout = ({ title, tag, nav, children }: { title: string;
     <div className="bo">
       <aside className="bo-sidebar">
         <Link to={nav[0]?.to ?? '/'} className="bo-sidebar__brand">
-          <img src="/images/fuwa_title.png" alt="FUWA FUWA" />
+          <img src="/images/fuwa_title.webp" alt="FUWA FUWA" />
           <span className="bo-sidebar__tag">{tag}</span>
         </Link>
         <nav className="bo-nav">

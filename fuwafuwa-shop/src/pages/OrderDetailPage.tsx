@@ -390,7 +390,7 @@ const OrderDetailPage: React.FC = () => {
             {order.items.map((item) => (
               <div key={item.item_no} className="item-row">
                 <img
-                  src={item.image_url ?? '/images/All.png'}
+                  src={item.image_url ?? '/images/All.webp'}
                   alt={item.product_name}
                   className="item-image"
                   onError={imageFallback(null)}

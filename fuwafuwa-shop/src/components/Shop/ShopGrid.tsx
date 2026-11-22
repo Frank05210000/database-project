@@ -72,7 +72,7 @@ export const ShopGrid: React.FC<ShopGridProps> = ({ onProductClick, banner }) =>
     <>
       <div className="shop-grid__top-space">
         <div className="shop-grid__header">
-          <img src="/images/shop_item.png" alt="Shop" className="shop-grid__icon" />
+          <img src="/images/shop_item.webp" alt="Shop" className="shop-grid__icon" />
         </div>
 
         <div className="shop-grid__filters">

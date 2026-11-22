@@ -113,6 +113,18 @@ def event_discount_for(db: Session, product_id: int, on: date) -> Discount | Non
                Discount.start_date <= on, Discount.end_date >= on))
 
 
+def event_discounts_for(db: Session, product_ids: list[int], on: date) -> dict[int, Discount]:
+    """一次查出多項商品目前適用的特殊活動折扣，避免商品列表逐筆查詢（N+1）。"""
+    if not product_ids:
+        return {}
+    rows = db.execute(
+        select(ProductDiscount.product_id, Discount)
+        .join(Discount, ProductDiscount.discount_code == Discount.discount_code)
+        .where(ProductDiscount.product_id.in_(product_ids), Discount.is_active.is_(True),
+               Discount.start_date <= on, Discount.end_date >= on))
+    return {pid: d for pid, d in rows}
+
+
 def event_amount(d: Discount, unit_price: Decimal, qty: int) -> Decimal:
     line = unit_price * qty
     if d.rate is not None:
