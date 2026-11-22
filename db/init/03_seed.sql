@@ -16,19 +16,28 @@ INSERT INTO users (loginid, name, password_hash, email, address, phone, is_activ
     ('bob',     '張寶博',       '$2b$10$We9RQjr9TVeQVS7UyjrTMOR83k4VlprGRLIanz979TGNF9AKaHVFK', 'bob@example.com',     '新北市板橋區文化路一段 20 號',  '0922-111-222', TRUE),
     ('carol',   '李可蘿',       '$2b$10$We9RQjr9TVeQVS7UyjrTMOR83k4VlprGRLIanz979TGNF9AKaHVFK', 'carol@example.com',   '高雄市左營區博愛二路 30 號',    '0933-555-666', FALSE);
 
+-- 商店店員接在原有六位使用者之後，保留既有編號
+INSERT INTO users (loginid, name, password_hash, email) VALUES
+    ('staff_xinyi', '陳信怡', '$2b$10$zZWKZD8Syv7gbgvWGv/2b.OwoFPSTW5XfL7HhhMXjne4apetBoYcC', 'staff_xinyi@fuwafuwa.tw'),
+    ('staff_gongyi', '林公益', '$2b$10$zZWKZD8Syv7gbgvWGv/2b.OwoFPSTW5XfL7HhhMXjne4apetBoYcC', 'staff_gongyi@fuwafuwa.tw'),
+    ('staff_zuoying', '黃左穎', '$2b$10$zZWKZD8Syv7gbgvWGv/2b.OwoFPSTW5XfL7HhhMXjne4apetBoYcC', 'staff_zuoying@fuwafuwa.tw');
+
 INSERT INTO user_role (user_id, role) VALUES
     (1, 'admin'),
     (2, 'staff'),
     (3, 'staff'), (3, 'admin'),
     (4, 'customer'),
     (5, 'customer'),
-    (6, 'customer');
+    (6, 'customer'),
+    (7, 'staff'), (8, 'staff'), (9, 'staff');
 
 -- ---------- 商店 ----------
 INSERT INTO store (name, address, email, phone) VALUES
     ('FUWA FUWA 台北信義店', '台北市信義區松仁路 100 號',    'xinyi@fuwafuwa.tw',    '02-2720-0001'),
     ('FUWA FUWA 台中公益店', '台中市南屯區公益路二段 51 號', 'gongyi@fuwafuwa.tw',   '04-2320-0002'),
     ('FUWA FUWA 高雄左營店', '高雄市左營區博愛二路 30 號',   'zuoying@fuwafuwa.tw',  '07-5560-0003');
+
+INSERT INTO store_staff (user_id, store_id) VALUES (7, 1), (8, 2), (9, 3);
 
 -- ---------- 商品（分類：food、toy、accessory、care、home） ----------
 INSERT INTO product (store_id, name, description, category, image_url, price, stock, is_listed) VALUES

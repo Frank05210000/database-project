@@ -75,7 +75,8 @@ def test_admin_endpoints_require_admin(client, alice_h, staff_h):
 # ---------- 平台管理：查詢與統計 ----------
 def test_list_and_search_users(client, admin_h):
     users = client.get("/api/admin/users", headers=admin_h).json()
-    assert [u["loginid"] for u in users] == ["admin", "staff", "manager", "alice", "bob", "carol"]
+    assert [u["loginid"] for u in users] == ["admin", "staff", "manager", "alice", "bob", "carol",
+                                             "staff_xinyi", "staff_gongyi", "staff_zuoying"]
     assert next(u for u in users if u["loginid"] == "manager")["roles"] == ["staff", "admin"]
     r = client.get("/api/admin/users", params={"q": "example.com"}, headers=admin_h).json()
     assert {u["loginid"] for u in r} == {"alice", "bob", "carol"}
@@ -91,7 +92,7 @@ def test_list_and_search_users(client, admin_h):
 
 def test_stats(client, admin_h):
     assert client.get("/api/admin/stats", headers=admin_h).json() == {
-        "users": 6, "customers": 3, "staff": 2, "admins": 2, "inactive": 1}
+        "users": 9, "customers": 3, "staff": 5, "admins": 2, "inactive": 1}
 
 
 # ---------- 平台管理：新增與修改 ----------

@@ -43,6 +43,18 @@ class DiscountUpdate(BaseModel):
     product_ids: list[int] | None = None
 
 
+def check_discount_store(db: Session, staff: User, discount_type: str, product_ids) -> None:
+    store_id = deps.staff_store_id(db, staff)
+    if store_id is None:
+        return
+    if discount_type != "special_event":
+        raise HTTPException(403, "運費與季節性折扣只能由總部工作人員管理")
+    if db.scalar(select(Product.product_id).where(
+        Product.product_id.in_(product_ids or []), Product.store_id != store_id
+    ).limit(1)) is not None:
+        raise HTTPException(403, "只能管理自己商店商品的特殊活動折扣")
+
+
 def format_discounts(db: Session, discounts: list[Discount]) -> list[dict[str, Any]]:
     if not discounts:
         return []
@@ -224,6 +236,7 @@ def create_discount(
     """建立折扣（staff）。"""
     pids = list(dict.fromkeys(body.product_ids)) if body.product_ids is not None else None
 
+    check_discount_store(db, staff, body.discount_type, pids)
     validate_discount_rules(
         db=db,
         discount_type=body.discount_type,
@@ -296,6 +309,8 @@ def update_discount(
     if discount is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"找不到折扣代碼 {code}")
 
+    check_discount_store(db, staff, discount.discount_type, [pd.product_id for pd in discount.products])
+
     if body.discount_code is not None and body.discount_code != code:
         raise HTTPException(status.HTTP_409_CONFLICT, "BR-18：折扣代碼與類型建立後不可修改")
     if body.discount_type is not None and body.discount_type != discount.discount_type:
@@ -318,6 +333,7 @@ def update_discount(
     else:
         merged_pids = [pd.product_id for pd in discount.products]
 
+    check_discount_store(db, staff, discount.discount_type, merged_pids)
     validate_discount_rules(
         db=db,
         discount_type=discount.discount_type,
@@ -368,6 +384,7 @@ def delete_discount(
     if discount is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"找不到折扣代碼 {code}")
 
+    check_discount_store(db, staff, discount.discount_type, [pd.product_id for pd in discount.products])
     used = db.scalar(
         select(func.count(OrderDiscount.order_id)).where(OrderDiscount.discount_code == code)
     )

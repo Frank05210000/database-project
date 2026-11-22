@@ -23,6 +23,8 @@ class UserOut(BaseModel):
     phone: str | None
     is_active: bool
     roles: list[str]
+    store_id: int | None
+    store_name: str | None
     created_at: datetime
 
 

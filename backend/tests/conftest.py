@@ -79,3 +79,8 @@ def alice_h(client):
 @pytest.fixture
 def bob_h(client):
     return login(client, "bob", "customer123")
+
+
+@pytest.fixture
+def xinyi_h(client):
+    return login(client, "staff_xinyi", "staff123")

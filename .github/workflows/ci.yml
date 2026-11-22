@@ -1,0 +1,53 @@
+# CI：每次 push 與 PR 都跑後端測試（含 trigger 與 BR 違規案例）和前端建置。
+# CD：由 Vercel 的 Git 整合負責——push 到 main 自動部署正式站，PR 自動產生預覽網址。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    name: 後端測試（pytest + PostgreSQL 16）
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: fuwa
+          POSTGRES_PASSWORD: fuwa
+          POSTGRES_DB: fuwa
+          TZ: Asia/Taipei
+          PGTZ: Asia/Taipei
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U fuwa" --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: pip install -r requirements.txt
+      - run: pytest -q -p no:warnings
+
+  frontend:
+    name: 前端建置（TypeScript + Vite）
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: fuwafuwa-shop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: fuwafuwa-shop/package-lock.json
+      - run: npm ci
+      - run: npm run build

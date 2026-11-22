@@ -9,7 +9,7 @@ from sqlalchemy import String, cast, or_, select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.deps import get_current_user, require_customer, require_staff
+from app.deps import check_order_store, get_current_user, require_customer, require_staff, staff_store_id, store_order_ids
 from app.models import Order, User
 from app.schemas_w2 import CheckoutIn, StatusIn, order_json, order_summary_json
 from app.services import orders as svc
@@ -24,6 +24,8 @@ def load_order(db: Session, order_id: int, user: User) -> Order:
         raise HTTPException(404, "找不到訂單")
     if order.user_id != user.user_id and not user.has_role("staff"):
         raise HTTPException(403, "BR-21：只能查看自己的訂單")
+    if order.user_id != user.user_id:   # 店員看別人的訂單時，限含本店商品的訂單
+        check_order_store(db, user, order_id)
     return order
 
 
@@ -61,6 +63,9 @@ def my_orders(user: User = Depends(require_customer), db: Session = Depends(get_
 def list_orders(status: str | None = None, date_from: date | None = None, date_to: date | None = None,
                 q: str | None = None, _: User = Depends(require_staff), db: Session = Depends(get_db)):
     stmt = select(Order).join(User, User.user_id == Order.user_id)
+    store_id = staff_store_id(db, _)
+    if store_id is not None:
+        stmt = stmt.where(Order.order_id.in_(store_order_ids(store_id)))
     if status:
         stmt = stmt.where(Order.status == status)
     if date_from:
@@ -99,6 +104,7 @@ def change_status(order_id: int, body: StatusIn, user: User = Depends(require_st
     order = db.get(Order, order_id)
     if order is None:
         raise HTTPException(404, "找不到訂單")
+    check_order_store(db, user, order_id)
     svc.advance_status(db, order, user, body.status)
     db.commit()
     return fresh(db, order_id)

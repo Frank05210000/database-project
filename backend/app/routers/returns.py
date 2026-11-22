@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.deps import get_current_user, require_customer, require_staff
+from app.deps import check_order_store, get_current_user, require_customer, require_staff, staff_store_id, store_order_ids
 from app.models import Order, ReturnRequest, User
 from app.schemas_w2 import RejectIn, ReturnIn, return_json
 from app.services import orders as svc
@@ -51,6 +51,9 @@ def mine(user: User = Depends(require_customer), db: Session = Depends(get_db)):
 @router.get("/")
 def list_returns(status: str | None = None, _: User = Depends(require_staff), db: Session = Depends(get_db)):
     stmt = select(ReturnRequest)
+    store_id = staff_store_id(db, _)
+    if store_id is not None:
+        stmt = stmt.where(ReturnRequest.order_id.in_(store_order_ids(store_id)))
     if status:
         if status not in STATUSES:
             raise HTTPException(422, "status 必須是 pending、approved 或 rejected")
@@ -63,6 +66,7 @@ def list_returns(status: str | None = None, _: User = Depends(require_staff), db
 @router.get("/{return_id}")
 def get_return(return_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     rr = load_return(db, return_id)
+    check_order_store(db, user, rr.order_id)
     if rr.order.user_id != user.user_id and not user.has_role("staff"):
         raise HTTPException(403, "BR-21：只能查看自己的退貨申請")
     return return_json(db, rr)
@@ -71,6 +75,7 @@ def get_return(return_id: int, user: User = Depends(get_current_user), db: Sessi
 @router.post("/{return_id}/approve")
 def approve(return_id: int, user: User = Depends(require_staff), db: Session = Depends(get_db)):
     rr = load_return(db, return_id)
+    check_order_store(db, user, rr.order_id)
     svc.approve_return(db, rr, user)
     db.commit()
     return fresh(db, return_id)
@@ -79,6 +84,7 @@ def approve(return_id: int, user: User = Depends(require_staff), db: Session = D
 @router.post("/{return_id}/reject")
 def reject(return_id: int, body: RejectIn, user: User = Depends(require_staff), db: Session = Depends(get_db)):
     rr = load_return(db, return_id)
+    check_order_store(db, user, rr.order_id)
     svc.reject_return(db, rr, user, body.reject_reason)
     db.commit()
     return fresh(db, return_id)

@@ -8,7 +8,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.deps import get_optional_user, require_staff
+from app.deps import get_optional_user, require_staff, staff_store_id
 from app.models import OrderItem, Product, Store, User
 from app.schemas_w1 import product_out, products_out
 from app.clock import tw_now, tw_today  # noqa: F401
@@ -45,6 +45,12 @@ def get_product_or_404(db: Session, product_id: int) -> Product:
 def ensure_store(db: Session, store_id: int) -> None:
     if db.get(Store, store_id) is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "找不到這間商店")
+
+
+def check_product_store(db: Session, user: User, *store_ids: int) -> None:
+    own_store = staff_store_id(db, user)
+    if own_store is not None and any(sid != own_store for sid in store_ids):
+        raise HTTPException(403, "只能管理自己商店的商品")
 
 
 @router.get("/")
@@ -104,6 +110,7 @@ def get_product(product_id: int, db: Session = Depends(get_db),
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_product(body: ProductIn, db: Session = Depends(get_db), _: User = Depends(require_staff)):
+    check_product_store(db, _, body.store_id)
     ensure_store(db, body.store_id)
     p = Product(**body.model_dump())
     db.add(p)
@@ -116,6 +123,7 @@ def create_product(body: ProductIn, db: Session = Depends(get_db), _: User = Dep
 def update_product(product_id: int, body: ProductIn, db: Session = Depends(get_db),
                    _: User = Depends(require_staff)):
     p = get_product_or_404(db, product_id)
+    check_product_store(db, _, p.store_id, body.store_id)
     ensure_store(db, body.store_id)
     for k, v in body.model_dump().items():
         setattr(p, k, v)
@@ -127,6 +135,7 @@ def update_product(product_id: int, body: ProductIn, db: Session = Depends(get_d
 @router.delete("/{product_id}")
 def delete_product(product_id: int, db: Session = Depends(get_db), _: User = Depends(require_staff)):
     p = get_product_or_404(db, product_id)
+    check_product_store(db, _, p.store_id)
     referenced = db.scalar(select(func.count()).select_from(OrderItem).where(OrderItem.product_id == product_id))
     if referenced:
         # BR-20：已被訂單引用的商品不可刪除，改為下架

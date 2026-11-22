@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.deps import require_admin
-from app.models import User, UserRole
+from app.models import Store, StoreStaff, User, UserRole
 from app.routers.auth import ensure_loginid_free
 from app.schemas_w1 import Address, Email, LoginId, Name, Password, Phone, Role, UserOut, user_out
 from app.security import hash_password
@@ -25,6 +25,7 @@ class UserCreateIn(BaseModel):
     email: Email
     address: Address = None
     phone: Phone = None
+    store_id: int | None = None
     roles: list[Role] = Field(default_factory=lambda: ["customer"])
 
 
@@ -38,6 +39,10 @@ class UserUpdateIn(BaseModel):
 
 class RolesIn(BaseModel):
     roles: list[Role]
+
+
+class StoreIn(BaseModel):
+    store_id: int | None
 
 
 class StatusIn(BaseModel):
@@ -75,11 +80,19 @@ def list_users(q: str | None = None, role: Role | None = None, is_active: bool |
 @router.post("/users", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def create_user(body: UserCreateIn, db: Session = Depends(get_db), _: User = Depends(require_admin)):
     roles = check_roles(body.roles)
+    if body.store_id is not None:
+        if "staff" not in roles:
+            raise HTTPException(409, "BR-21：只有工作人員可以設定隸屬商店")
+        if db.get(Store, body.store_id) is None:
+            raise HTTPException(404, "找不到這間商店")
     ensure_loginid_free(db, body.loginid)
     user = User(loginid=body.loginid, name=body.name, password_hash=hash_password(body.password),
                 email=body.email, address=body.address, phone=body.phone, is_active=True)
     user.role_rows.extend(UserRole(role=r) for r in sorted(roles))
     db.add(user)
+    db.flush()  # 先建立角色，讓商店隸屬的 trigger 可以查到 staff
+    if body.store_id is not None:
+        db.add(StoreStaff(user_id=user.user_id, store_id=body.store_id))
     db.commit()
     db.refresh(user)
     return user_out(user)
@@ -138,4 +151,25 @@ def set_status(user_id: int, body: StatusIn, db: Session = Depends(get_db), me: 
         raise HTTPException(status.HTTP_409_CONFLICT, "AAS：不能停用自己的帳號")
     user.is_active = body.is_active
     db.commit()
+    return user_out(user)
+
+
+@router.put("/users/{user_id}/store", response_model=UserOut)
+def set_store(user_id: int, body: StoreIn, db: Session = Depends(get_db),
+              _: User = Depends(require_admin)):
+    user = get_user_or_404(db, user_id)
+    if not user.has_role("staff"):
+        raise HTTPException(409, "BR-21：只有工作人員可以設定隸屬商店")
+    if body.store_id is not None and db.get(Store, body.store_id) is None:
+        raise HTTPException(404, "找不到這間商店")
+    row = db.get(StoreStaff, user_id)
+    if body.store_id is None:
+        if row is not None:
+            db.delete(row)
+    elif row is None:
+        db.add(StoreStaff(user_id=user_id, store_id=body.store_id))
+    else:
+        row.store_id = body.store_id
+    db.commit()
+    db.refresh(user)
     return user_out(user)

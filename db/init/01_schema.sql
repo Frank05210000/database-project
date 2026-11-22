@@ -35,6 +35,12 @@ CREATE TABLE store (
     phone     VARCHAR(20)   NOT NULL
 );
 
+-- 工作人員至多隸屬一間商店；沒有紀錄表示總部工作人員
+CREATE TABLE store_staff (
+    user_id INT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
+    store_id INT NOT NULL REFERENCES store(store_id)
+);
+
 CREATE TABLE product (
     product_id   SERIAL         PRIMARY KEY,
     store_id     INT            NOT NULL REFERENCES store(store_id),

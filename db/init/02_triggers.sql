@@ -13,6 +13,29 @@ CREATE OR REPLACE FUNCTION fn_has_role(p_user INT, p_role TEXT) RETURNS BOOLEAN 
     SELECT EXISTS (SELECT 1 FROM user_role WHERE user_id = p_user AND role = p_role)
 $$ LANGUAGE sql STABLE;
 
+-- ---------- 工作人員商店隸屬（BR-21） ----------
+CREATE OR REPLACE FUNCTION trg_store_staff_check() RETURNS trigger AS $$
+BEGIN
+    IF NOT fn_has_role(NEW.user_id, 'staff') THEN
+        RAISE EXCEPTION 'BR-21：只有工作人員可以設定隸屬商店';
+    END IF;
+    RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER store_staff_check BEFORE INSERT OR UPDATE ON store_staff
+    FOR EACH ROW EXECUTE FUNCTION trg_store_staff_check();
+
+CREATE OR REPLACE FUNCTION trg_staff_role_cleanup() RETURNS trigger AS $$
+BEGIN
+    IF OLD.role = 'staff' THEN
+        DELETE FROM store_staff WHERE user_id = OLD.user_id;
+    END IF;
+    RETURN OLD;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER staff_role_cleanup AFTER DELETE ON user_role
+    FOR EACH ROW EXECUTE FUNCTION trg_staff_role_cleanup();
+
 -- ---------- 商品：自動更新 updated_at ----------
 CREATE OR REPLACE FUNCTION trg_product_touch() RETURNS trigger AS $$
 BEGIN

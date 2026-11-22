@@ -74,6 +74,9 @@ Phase 4 依課本正規化到 3NF，相對 Phase 2 的 schema 做了兩處拆分
 
 ## 5. API 契約（全部以 `/api` 開頭，錯誤格式 `{"detail": "BR-xx：訊息"}`）
 
+工作人員沒有 `store_staff` 紀錄時為總部，保留跨店權限（含既有 staff、manager）。店員僅能維護本店商品（含更新後的商店），越權回 403；訂單與退貨清單限含本店商品的訂單，其他商店的詳細資料與狀態操作回 404。報表強制採本店篩選，摘要金額依本店比例分攤並扣除本店退款。店員僅能管理所有指定商品皆屬本店的特殊活動折扣，運費與季節性折扣操作回 403；折扣清單仍可跨店瀏覽。
+
+
 違反商業規則回 **409**，未登入 **401**，角色不符 **403**，找不到 **404**，欄位格式錯 **422**。金額一律為整數（新台幣元）。
 
 ### AAS `/api/auth`
@@ -84,9 +87,11 @@ Phase 4 依課本正規化到 3NF，相對 Phase 2 的 schema 做了兩處拆分
 
 ### 平台管理 `/api/admin`（admin）
 - `GET /users?q=&role=&is_active=` → `User[]`（q 比對 loginid、姓名、Email）
-- `POST /users` `{loginid,name,password,email,address?,phone?,roles:string[]}` → 201 `User`
+- `POST /users` `{loginid,name,password,email,address?,phone?,roles:string[],store_id?:int|null}` → 201 `User`
 - `GET /users/{id}`、`PUT /users/{id}` `{name,email,address,phone,password?}`
 - `PUT /users/{id}/roles` `{roles:string[]}`（整組取代，至少一個角色）
+- `PUT /users/{id}/store` `{store_id:int|null}` → `User`（null 為總部；非 staff 回 409 BR-21，商店不存在回 404）
+- `User`（含 `/api/auth/me`）新增 `store_id:int|null`、`store_name:string|null`。
 - `PATCH /users/{id}/status` `{is_active:boolean}`
 - `GET /stats` → `{users, customers, staff, admins, inactive}`
 

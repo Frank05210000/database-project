@@ -29,6 +29,9 @@ def get_sales_report(
     if period not in ("day", "week", "month"):
         raise HTTPException(422, "period 必須是 day、week 或 month")
 
+    own_store = deps.staff_store_id(db, staff)
+    if own_store is not None:
+        store_id = own_store
     today = tw_today()
     if date_to is None:
         date_to = today
@@ -129,6 +132,9 @@ def get_top_products(
     staff: User = Depends(deps.require_staff),
 ):
     """暢銷商品報表（staff，排除 cancelled 與 returned 訂單）。"""
+    own_store = deps.staff_store_id(db, staff)
+    if own_store is not None:
+        store_id = own_store
     stmt = select(Order).where(Order.status.not_in(["cancelled", "returned"]))
     if date_from:
         stmt = stmt.where(Order.order_time >= datetime.combine(date_from, time.min))
@@ -179,7 +185,10 @@ def get_summary(
     staff: User = Depends(deps.require_staff),
 ):
     """營運摘要（staff，銷售總額依 BR-23 各商店分攤加總）。"""
+    store_id = deps.staff_store_id(db, staff)
     stmt = select(Order)
+    if store_id is not None:
+        stmt = stmt.where(Order.order_id.in_(deps.store_order_ids(store_id)))
     if date_from:
         stmt = stmt.where(Order.order_time >= datetime.combine(date_from, time.min))
     if date_to:
@@ -213,15 +222,20 @@ def get_summary(
             store_items[sid] = store_items.get(sid, Decimal(0)) + net
 
         for sid, s_net in store_items.items():
+            if store_id is not None and sid != store_id:
+                continue
             share = round_half_up(Decimal(o.total) * s_net / order_net) if order_net > 0 else Decimal(0)
             sales_total += share
 
         if o.return_request is not None and o.return_request.status == "approved" and o.status != "returned":
             for ri in o.return_request.items:
-                if ri.refund_amount is not None:
+                if (ri.refund_amount is not None and (store_id is None or
+                        any(it.item_no == ri.item_no and it.product.store_id == store_id for it in o.items))):
                     sales_total -= Decimal(ri.refund_amount)
 
     pending_stmt = select(func.count(ReturnRequest.return_id)).where(ReturnRequest.status == "pending")
+    if store_id is not None:
+        pending_stmt = pending_stmt.where(ReturnRequest.order_id.in_(deps.store_order_ids(store_id)))
     if date_from:
         pending_stmt = pending_stmt.where(func.date(ReturnRequest.requested_at) >= date_from)
     if date_to:

@@ -26,6 +26,16 @@ class User(Base):
 
     role_rows: Mapped[list["UserRole"]] = relationship(cascade="all, delete-orphan", lazy="selectin")
 
+    staff_store: Mapped["StoreStaff | None"] = relationship(lazy="selectin", passive_deletes="all")
+
+    @property
+    def store_id(self) -> int | None:
+        return self.staff_store.store_id if self.has_role("staff") and self.staff_store else None
+
+    @property
+    def store_name(self) -> str | None:
+        return self.staff_store.store.name if self.store_id is not None else None
+
     @property
     def roles(self) -> list[str]:
         order = {"customer": 0, "staff": 1, "admin": 2}
@@ -48,6 +58,14 @@ class Store(Base):
     address: Mapped[str] = mapped_column(String(200))
     email: Mapped[str] = mapped_column(String(100))
     phone: Mapped[str] = mapped_column(String(20))
+
+
+class StoreStaff(Base):
+    __tablename__ = "store_staff"
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
+    store_id: Mapped[int] = mapped_column(ForeignKey("store.store_id"))
+
+    store: Mapped[Store] = relationship(lazy="joined")
 
 
 class Product(Base):
