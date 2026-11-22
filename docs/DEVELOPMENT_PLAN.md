@@ -34,19 +34,27 @@ PostgreSQL 16（db/init/：01 schema、02 trigger、03 種子資料）
 | BR-06 庫存 | `services/orders.checkout` SELECT … FOR UPDATE | `stock >= 0` CHECK、`cart_item_check` trigger |
 | BR-07 至少一項 | 結帳同一交易寫入訂單與明細 | — |
 | BR-09～BR-17 金額 | `services/pricing.quote`（購物車預覽與結帳共用） | discount 的 CHECK |
-| BR-13 期間不重疊 | 建立前先查衝突代碼（DMS-F-008） | `product_discount` EXCLUDE |
+| BR-13 期間不重疊 | 建立前先查衝突代碼（DMS-F-008） | `product_discount_check`、`discount_period_check` trigger（pg_advisory_xact_lock 防併發） |
 | BR-18 代碼不可改 | 由 `discount_code_seq` 產生 | `discount_code_immutable` trigger |
 | BR-19 狀態流轉 | `services/orders.advance_status / cancel_order` | `orders_status_check` trigger＋自動寫 `order_status_history` |
 | BR-20 不可刪除 | 被引用時改下架/停用 | 外鍵 NO ACTION |
 | BR-21 角色 | `deps.require_role` | `orders_insert_check`、`return_request_update` trigger |
 | BR-23 報表分攤 | `routers/reports.py` | — |
 | BR-24 評價 | `routers/stores.py` | `store_review_insert` trigger |
-| BR-25 退貨 | `services/orders.create_return` | `return_request_insert`、`return_item_insert` trigger、UNIQUE(order_id) |
+| BR-25 退貨 | `services/orders.create_return` | `return_request_insert`、`return_item_insert` trigger、UNIQUE(order_id)、FK (order_id, item_no) → order_item |
 | BR-26 退款 | `services/orders.compute_refund / approve_return` | — |
 
 金額欄位約定：`orders.shipping_fee` 存基本運費，`orders.discount_total` 為特殊活動＋季節性＋運費折扣合計，
 `total = subtotal − discount_total + tax + shipping_fee`。BR-26 的「運費」指顧客實付運費（基本運費 − 運費折扣）。
 部分數量退貨時，該項「扣除特殊活動折扣後的金額」依退貨數量比例計算。
+
+### 正規化（3NF）
+
+Phase 4 依課本正規化到 3NF，相對 Phase 2 的 schema 做了兩處拆分：
+- `product_discount(product_id, discount_code)`：移除重複的 discount_type／start_date／end_date（原本部分相依於 discount_code），
+  連帶移除 discount 上給複合外鍵用的 UNIQUE、EXCLUDE 與 btree_gist；BR-13 改由 trigger 檢查。
+- `return_item(order_id, item_no, return_qty, refund_amount)`：移除 return_id（return_id → order_id 是部分相依），
+  因為 `return_request.order_id` 是 UNIQUE，order_id 就能識別退貨申請。
 
 ## 4. 工作拆分（並行、檔案不重疊）
 

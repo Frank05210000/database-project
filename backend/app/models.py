@@ -149,18 +149,11 @@ class Discount(Base):
 
 
 class ProductDiscount(Base):
+    """特殊活動折扣適用的商品（3NF：期間只存在 discount）。BR-13 由 trigger 檢查。"""
     __tablename__ = "product_discount"
-    __table_args__ = (
-        ForeignKeyConstraint(["discount_code", "discount_type", "start_date", "end_date"],
-                             ["discount.discount_code", "discount.discount_type",
-                              "discount.start_date", "discount.end_date"],
-                             onupdate="CASCADE", ondelete="CASCADE"),
-    )
     product_id: Mapped[int] = mapped_column(ForeignKey("product.product_id", ondelete="CASCADE"), primary_key=True)
-    discount_code: Mapped[str] = mapped_column(String(20), primary_key=True)
-    discount_type: Mapped[str] = mapped_column(String(15), default="special_event")
-    start_date: Mapped[date] = mapped_column(Date)
-    end_date: Mapped[date] = mapped_column(Date)
+    discount_code: Mapped[str] = mapped_column(
+        ForeignKey("discount.discount_code", ondelete="CASCADE"), primary_key=True)
 
     product: Mapped[Product] = relationship(lazy="joined")
 
@@ -188,18 +181,18 @@ class ReturnRequest(Base):
 
     order: Mapped[Order] = relationship(back_populates="return_request", lazy="joined")
     items: Mapped[list["ReturnItem"]] = relationship(
+        primaryjoin="ReturnRequest.order_id == foreign(ReturnItem.order_id)",
         cascade="all, delete-orphan", order_by="ReturnItem.item_no", lazy="selectin")
 
 
 class ReturnItem(Base):
+    """退貨明細（3NF：以 order_id 識別退貨申請，因為每張訂單最多一筆申請）。"""
     __tablename__ = "return_item"
     __table_args__ = (
-        ForeignKeyConstraint(["return_id", "order_id"],
-                             ["return_request.return_id", "return_request.order_id"], ondelete="CASCADE"),
         ForeignKeyConstraint(["order_id", "item_no"], ["order_item.order_id", "order_item.item_no"]),
     )
-    return_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    order_id: Mapped[int] = mapped_column(Integer)
+    order_id: Mapped[int] = mapped_column(
+        ForeignKey("return_request.order_id", ondelete="CASCADE"), primary_key=True)
     item_no: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
     return_qty: Mapped[int] = mapped_column(Integer)
     refund_amount: Mapped[Decimal | None] = mapped_column(Numeric(10, 0))

@@ -1,8 +1,10 @@
 -- FUWA FUWA e-Shop 資料庫 schema（Phase 3，PostgreSQL 16+）
--- 以 phase2/schema.sql 為基礎；Phase 3 新增 return_request.refund_total（DR-13 退款總額）。
+-- 以 phase2/schema.sql 為基礎，Phase 3／4 的修改：
+--   * 新增 return_request.refund_total（DR-13 退款總額，核准退貨時依 BR-26 算好存起來）
+--   * 正規化到 3NF：product_discount 移除重複的 discount_type／期間欄位（原本部分相依於 discount_code）；
+--     return_item 以 (order_id, item_no) 為主鍵、移除 return_id（原本 return_id → order_id 造成部分相依）。
+--     BR-13 期間不重疊改由 02_triggers.sql 的 trigger 檢查。
 -- trigger 見 02_triggers.sql，初始資料見 03_seed.sql。
-
-CREATE EXTENSION IF NOT EXISTS btree_gist;   -- EXCLUDE 約束需要用 = 比較整數欄位
 
 -- ---------- 使用者與角色 ----------
 CREATE TABLE users (
@@ -116,24 +118,15 @@ CREATE TABLE discount (
         (discount_type = 'shipping'      AND min_amount IS NOT NULL AND rate IS NULL AND buy_qty IS NULL) OR
         (discount_type = 'seasonal'      AND rate IS NOT NULL AND min_amount IS NULL AND buy_qty IS NULL) OR
         (discount_type = 'special_event' AND min_amount IS NULL AND (rate IS NULL) <> (buy_qty IS NULL))
-    ),
-    UNIQUE (discount_code, discount_type, start_date, end_date)   -- 給 product_discount 的複合外鍵用
+    )
 );
 
+-- 特殊活動折扣適用的商品。期間只存在 discount；BR-13（期間不重疊）與「只有 special_event 能掛商品」
+-- 由 trigger product_discount_check 與 discount_period_check 檢查（02_triggers.sql）
 CREATE TABLE product_discount (
     product_id     INT          NOT NULL REFERENCES product(product_id) ON DELETE CASCADE,
-    discount_code  VARCHAR(20)  NOT NULL,
-    discount_type  VARCHAR(15)  NOT NULL DEFAULT 'special_event'
-                   CHECK (discount_type = 'special_event'),
-    start_date     DATE         NOT NULL,
-    end_date       DATE         NOT NULL,
-    PRIMARY KEY (product_id, discount_code),
-    FOREIGN KEY (discount_code, discount_type, start_date, end_date)
-        REFERENCES discount (discount_code, discount_type, start_date, end_date)
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    -- BR-13：同一商品的特殊活動折扣期間不得重疊（含首尾兩日）
-    EXCLUDE USING gist (product_id WITH =,
-                        daterange(start_date, end_date, '[]') WITH &&)
+    discount_code  VARCHAR(20)  NOT NULL REFERENCES discount(discount_code) ON DELETE CASCADE,
+    PRIMARY KEY (product_id, discount_code)
 );
 
 CREATE TABLE order_discount (
@@ -156,19 +149,17 @@ CREATE TABLE return_request (
     reject_reason  VARCHAR(300),
     refund_total   NUMERIC(10,0) CHECK (refund_total >= 0),   -- 核准後依 BR-26 計算
     CHECK ((status = 'pending') = (processed_by IS NULL AND processed_at IS NULL)),
-    CHECK ((status = 'rejected') = (reject_reason IS NOT NULL)),
-    UNIQUE (return_id, order_id)   -- 給 return_item 的複合外鍵用
+    CHECK ((status = 'rejected') = (reject_reason IS NOT NULL))
 );
 
+-- 每筆訂單最多一筆退貨申請（return_request.order_id UNIQUE），所以 order_id 就能識別退貨申請
 CREATE TABLE return_item (
-    return_id      INT            NOT NULL,
-    order_id       INT            NOT NULL,
+    order_id       INT            NOT NULL REFERENCES return_request(order_id) ON DELETE CASCADE,
     item_no        SMALLINT       NOT NULL,
     return_qty     INT            NOT NULL CHECK (return_qty > 0),
     refund_amount  NUMERIC(10,0)  CHECK (refund_amount >= 0),
-    PRIMARY KEY (return_id, item_no),
-    FOREIGN KEY (return_id, order_id) REFERENCES return_request (return_id, order_id) ON DELETE CASCADE,
-    FOREIGN KEY (order_id, item_no)   REFERENCES order_item (order_id, item_no)
+    PRIMARY KEY (order_id, item_no),
+    FOREIGN KEY (order_id, item_no) REFERENCES order_item (order_id, item_no)   -- 只能退這張訂單的明細
 );
 
 -- ---------- 商店評價（選配） ----------

@@ -120,9 +120,47 @@ def test_return_qty_over_purchase_rejected_by_trigger(db):
     with pytest.raises(HTTPException, match="BR-25"):
         svc.create_return(db, order, "x", [(1, 5)])
     db.execute(text("INSERT INTO return_request (order_id, reason) VALUES (:o, 'x')"), {"o": order.order_id})
-    rid = db.execute(text("SELECT return_id FROM return_request WHERE order_id=:o"), {"o": order.order_id}).scalar()
     with pytest.raises(DBAPIError, match="BR-25"):
-        db.execute(text("INSERT INTO return_item VALUES (:r, :o, 1, 5, NULL)"), {"r": rid, "o": order.order_id})
+        db.execute(text("INSERT INTO return_item (order_id, item_no, return_qty) VALUES (:o, 1, 5)"), {"o": order.order_id})
+    db.rollback()
+
+
+def test_return_item_of_another_order_rejected(db):
+    """退別張訂單的明細：(order_id, item_no) 外鍵參照 order_item，第 2 項不存在於這張訂單就被拒絕。"""
+    alice, staff = db.get(User, 4), db.get(User, 2)
+    db.add(CartItem(user_id=4, product_id=1, quantity=1))
+    db.commit()
+    o1 = svc.checkout(db, alice, "a", "b", "c")
+    _cart(db, 4, [(2, 1), (3, 1)])
+    o2 = svc.checkout(db, alice, "a", "b", "c")   # 這張有第 2 項
+    svc.advance_status(db, o1, staff, "processing")
+    db.commit()
+    db.execute(text("INSERT INTO return_request (order_id, reason) VALUES (:o, 'x')"), {"o": o1.order_id})
+    with pytest.raises(DBAPIError, match="return_item_order_id_item_no_fkey"):
+        db.execute(text("INSERT INTO return_item (order_id, item_no, return_qty) VALUES (:o, 2, 1)"), {"o": o1.order_id})
+    db.rollback()
+    assert o2.order_id != o1.order_id
+
+
+def test_event_discount_rules_enforced_by_trigger(db):
+    """3NF 後 BR-13 由 trigger 檢查：期間重疊、季節性折扣掛商品、修改期間造成重疊都會被拒絕。"""
+    # 期間重疊：EVT-0001 已套用在商品 9（2026-11-01～12-31）
+    db.execute(text("INSERT INTO discount (discount_code, discount_type, description, start_date, end_date, rate) "
+                    "VALUES ('EVT-T1', 'special_event', 't', '2026-12-31', '2027-01-15', 0.1)"))
+    with pytest.raises(DBAPIError, match="BR-13.*EVT-0001"):
+        db.execute(text("INSERT INTO product_discount VALUES (9, 'EVT-T1')"))
+    db.rollback()
+    # 季節性折扣不能掛到商品上
+    with pytest.raises(DBAPIError, match="BR-13：只有特殊活動折扣"):
+        db.execute(text("INSERT INTO product_discount VALUES (1, 'SEA-0001')"))
+    db.rollback()
+    # 不重疊的期間可以，之後把期間改成重疊會被拒絕
+    db.execute(text("INSERT INTO discount (discount_code, discount_type, description, start_date, end_date, rate) "
+                    "VALUES ('EVT-T2', 'special_event', 't', '2027-01-01', '2027-01-31', 0.1)"))
+    db.execute(text("INSERT INTO product_discount VALUES (9, 'EVT-T2')"))
+    db.commit()
+    with pytest.raises(DBAPIError, match="BR-13.*EVT-0001"):
+        db.execute(text("UPDATE discount SET start_date = '2026-12-20' WHERE discount_code = 'EVT-T2'"))
     db.rollback()
 
 

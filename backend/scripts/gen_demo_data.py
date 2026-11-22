@@ -110,8 +110,8 @@ def request_return(o: Order, items: list[tuple[int, int]], reason: str, t: datet
     db.commit()
     sql.append(f"INSERT INTO return_request (return_id, order_id, requested_at, reason) VALUES "
                f"({rr.return_id}, {o.order_id}, {lit(t)}, {lit(reason)});")
-    sql.append("INSERT INTO return_item (return_id, order_id, item_no, return_qty) VALUES "
-               + ", ".join(f"({rr.return_id}, {o.order_id}, {no}, {q})" for no, q in items) + ";")
+    sql.append("INSERT INTO return_item (order_id, item_no, return_qty) VALUES "
+               + ", ".join(f"({o.order_id}, {no}, {q})" for no, q in items) + ";")
     return rr
 
 
@@ -124,7 +124,7 @@ def approve(o: Order, rr, t: datetime) -> None:
     by_no = {it.item_no: it for it in o.items}
     for ri in rr.items:
         sql.append(f"UPDATE return_item SET refund_amount = {lit(ri.refund_amount)} "
-                   f"WHERE return_id = {rr.return_id} AND item_no = {ri.item_no};")
+                   f"WHERE order_id = {o.order_id} AND item_no = {ri.item_no};")
         sql.append(f"UPDATE product SET stock = stock + {ri.return_qty} WHERE product_id = {by_no[ri.item_no].product_id};")
     if o.status == "returned":  # 所有商品都退貨才改為 returned（BR-19）
         actor(STAFF)

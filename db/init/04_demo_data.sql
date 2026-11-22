@@ -95,9 +95,9 @@ SELECT set_config('app.user_id', '2', false);
 UPDATE orders SET status = 'closed' WHERE order_id = 5;
 UPDATE order_status_history SET changed_at = '2026-10-12 16:20:00' WHERE order_id = 5 AND seq_no = (SELECT MAX(seq_no) FROM order_status_history WHERE order_id = 5);
 INSERT INTO return_request (return_id, order_id, requested_at, reason) VALUES (1, 5, '2026-10-14 16:20:00', '洗毛精多買了一瓶，未拆封。');
-INSERT INTO return_item (return_id, order_id, item_no, return_qty) VALUES (1, 5, 2, 1);
+INSERT INTO return_item (order_id, item_no, return_qty) VALUES (5, 2, 1);
 UPDATE return_request SET status = 'approved', processed_by = 2, processed_at = '2026-10-15 16:20:00', refund_total = 368 WHERE return_id = 1;
-UPDATE return_item SET refund_amount = 368 WHERE return_id = 1 AND item_no = 2;
+UPDATE return_item SET refund_amount = 368 WHERE order_id = 5 AND item_no = 2;
 UPDATE product SET stock = stock + 1 WHERE product_id = 12;
 
 -- 訂單 #6：bob 下單後取消
@@ -121,11 +121,11 @@ SELECT set_config('app.user_id', '2', false);
 UPDATE orders SET status = 'processing' WHERE order_id = 7;
 UPDATE order_status_history SET changed_at = '2026-10-25 20:27:00' WHERE order_id = 7 AND seq_no = (SELECT MAX(seq_no) FROM order_status_history WHERE order_id = 7);
 INSERT INTO return_request (return_id, order_id, requested_at, reason) VALUES (2, 7, '2026-10-26 01:15:00', '尺寸不合，全部退貨。');
-INSERT INTO return_item (return_id, order_id, item_no, return_qty) VALUES (2, 7, 1, 2), (2, 7, 2, 1);
+INSERT INTO return_item (order_id, item_no, return_qty) VALUES (7, 1, 2), (7, 2, 1);
 UPDATE return_request SET status = 'approved', processed_by = 2, processed_at = '2026-10-26 13:15:00', refund_total = 709 WHERE return_id = 2;
-UPDATE return_item SET refund_amount = 315 WHERE return_id = 2 AND item_no = 1;
+UPDATE return_item SET refund_amount = 315 WHERE order_id = 7 AND item_no = 1;
 UPDATE product SET stock = stock + 2 WHERE product_id = 2;
-UPDATE return_item SET refund_amount = 294 WHERE return_id = 2 AND item_no = 2;
+UPDATE return_item SET refund_amount = 294 WHERE order_id = 7 AND item_no = 2;
 UPDATE product SET stock = stock + 1 WHERE product_id = 7;
 SELECT set_config('app.user_id', '2', false);
 UPDATE orders SET status = 'returned' WHERE order_id = 7;
@@ -146,7 +146,7 @@ SELECT set_config('app.user_id', '2', false);
 UPDATE orders SET status = 'closed' WHERE order_id = 8;
 UPDATE order_status_history SET changed_at = '2026-10-30 19:45:00' WHERE order_id = 8 AND seq_no = (SELECT MAX(seq_no) FROM order_status_history WHERE order_id = 8);
 INSERT INTO return_request (return_id, order_id, requested_at, reason) VALUES (3, 8, '2026-11-06 19:45:00', '不喜歡味道。');
-INSERT INTO return_item (return_id, order_id, item_no, return_qty) VALUES (3, 8, 1, 1);
+INSERT INTO return_item (order_id, item_no, return_qty) VALUES (8, 1, 1);
 UPDATE return_request SET status = 'rejected', processed_by = 2, processed_at = '2026-11-07 19:45:00', reject_reason = '商品已開封使用，不符合退貨條件。' WHERE return_id = 3;
 
 -- 訂單 #9：bob 貓跳台 8 折＋主食罐買 2 送 1＋冬季 95 折，配送中
@@ -186,7 +186,7 @@ SELECT set_config('app.user_id', '2', false);
 UPDATE orders SET status = 'shipping' WHERE order_id = 10;
 UPDATE order_status_history SET changed_at = '2026-11-14 01:58:00' WHERE order_id = 10 AND seq_no = (SELECT MAX(seq_no) FROM order_status_history WHERE order_id = 10);
 INSERT INTO return_request (return_id, order_id, requested_at, reason) VALUES (4, 10, '2026-11-15 21:10:00', '零食包裝破損。');
-INSERT INTO return_item (return_id, order_id, item_no, return_qty) VALUES (4, 10, 2, 1);
+INSERT INTO return_item (order_id, item_no, return_qty) VALUES (10, 2, 1);
 
 -- 訂單 #11：bob 三店各一件，處理中
 INSERT INTO orders (order_id, user_id, order_time, recipient_name, recipient_phone, recipient_address, subtotal, discount_total, tax, shipping_fee, total, status, paid_at) VALUES (11, 5, '2026-11-18 10:30:00', '張寶博', '0922-111-222', '新北市板橋區文化路一段 20 號', 950, 138, 41, 100, 953, 'received', '2026-11-18 10:30:00');

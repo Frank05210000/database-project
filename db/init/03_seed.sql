@@ -62,8 +62,8 @@ INSERT INTO discount (discount_code, discount_type, description, start_date, end
     ('EVT-0003', 'special_event', '啾啾球 85 折（已結束）',    '2026-06-01', '2026-06-30', 0.150, NULL, NULL, NULL, TRUE),
     ('EVT-0004', 'special_event', '凍乾零食 9 折',             '2026-10-01', '2026-12-31', 0.100, NULL, NULL, NULL, TRUE);
 
-INSERT INTO product_discount (product_id, discount_code, start_date, end_date) VALUES
-    (9, 'EVT-0001', '2026-11-01', '2026-12-31'),
-    (5, 'EVT-0002', '2026-11-01', '2026-12-31'),
-    (1, 'EVT-0003', '2026-06-01', '2026-06-30'),
-    (8, 'EVT-0004', '2026-10-01', '2026-12-31');
+INSERT INTO product_discount (product_id, discount_code) VALUES
+    (9, 'EVT-0001'),
+    (5, 'EVT-0002'),
+    (1, 'EVT-0003'),
+    (8, 'EVT-0004');

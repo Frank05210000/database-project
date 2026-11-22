@@ -23,8 +23,7 @@ def stable_discounts(db):
         VALUES ('EVT-9001', 'special_event', '梳毛刷 8 折', '2000-01-01', '2099-12-31', 0.200, NULL),
                ('SEA-9001', 'seasonal', '全館 9 折', '2000-01-01', '2099-12-31', 0.100, NULL),
                ('SHP-9001', 'shipping', '滿 1000 免運', '2000-01-01', '2099-12-31', NULL, 1000)"""))
-    db.execute(text("INSERT INTO product_discount (product_id, discount_code, start_date, end_date) "
-                    "VALUES (3, 'EVT-9001', '2000-01-01', '2099-12-31')"))
+    db.execute(text("INSERT INTO product_discount (product_id, discount_code) VALUES (3, 'EVT-9001')"))
     db.commit()
 
 

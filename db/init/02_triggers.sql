@@ -1,4 +1,5 @@
 -- FUWA FUWA e-Shop：trigger（Phase 2 SRS 4.3 節「需要 trigger 或交易處理的規則」）
+-- BR-13 在 3NF 後也改由 trigger 檢查（product_discount_check、discount_period_check）。
 -- BR-06 / BR-07 的結帳交易在後端 app/services/checkout.py 以 SELECT … FOR UPDATE 實作；
 -- 以下 trigger 是資料庫層的最後一道防線，就算繞過後端直接改資料也會被拒絕。
 -- 所有違規都以 RAISE EXCEPTION（SQLSTATE P0001）回報，訊息以規則編號開頭，後端轉成 HTTP 409。
@@ -79,8 +80,8 @@ BEGIN
             SELECT 1 FROM order_item oi
             WHERE oi.order_id = NEW.order_id
               AND oi.quantity > COALESCE((
-                    SELECT SUM(ri.return_qty)
-                    FROM return_item ri JOIN return_request rr ON rr.return_id = ri.return_id
+                    SELECT ri.return_qty
+                    FROM return_item ri JOIN return_request rr ON rr.order_id = ri.order_id
                     WHERE rr.status = 'approved' AND ri.order_id = oi.order_id AND ri.item_no = oi.item_no), 0)) THEN
         RAISE EXCEPTION 'BR-19：訂單尚有商品未退貨，不可改為 returned';
     END IF;
@@ -146,7 +147,7 @@ BEGIN
     IF NEW.return_qty > v_qty THEN
         RAISE EXCEPTION 'BR-25：退貨數量 % 超過購買數量 %', NEW.return_qty, v_qty;
     END IF;
-    SELECT status INTO v_status FROM return_request WHERE return_id = NEW.return_id;
+    SELECT status INTO v_status FROM return_request WHERE order_id = NEW.order_id;
     IF v_status <> 'pending' THEN
         RAISE EXCEPTION 'BR-25：已處理的退貨申請不可再新增商品';
     END IF;
@@ -183,6 +184,59 @@ END $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER discount_code_immutable BEFORE UPDATE ON discount
     FOR EACH ROW EXECUTE FUNCTION trg_discount_code_immutable();
+
+-- ---------- 特殊活動折扣適用商品（BR-13、DMS-F-008） ----------
+-- 3NF 後 product_discount 不再存期間，改由 trigger 檢查：
+--   (a) 只有 special_event 折扣能指定商品；(b) 同一商品的特殊活動折扣期間（含首尾兩日）不得重疊。
+-- 以 pg_advisory_xact_lock(product_id) 鎖住商品，避免兩筆交易同時通過檢查。
+CREATE OR REPLACE FUNCTION fn_check_event_overlap(p_product INT, p_code TEXT, p_start DATE, p_end DATE)
+RETURNS VOID AS $$
+DECLARE v_conflict TEXT; v_name TEXT;
+BEGIN
+    PERFORM pg_advisory_xact_lock(p_product);
+    SELECT d.discount_code INTO v_conflict
+    FROM product_discount pd JOIN discount d ON d.discount_code = pd.discount_code
+    WHERE pd.product_id = p_product
+      AND pd.discount_code <> p_code
+      AND daterange(d.start_date, d.end_date, '[]') && daterange(p_start, p_end, '[]')
+    ORDER BY d.discount_code
+    LIMIT 1;
+    IF v_conflict IS NOT NULL THEN
+        SELECT name INTO v_name FROM product WHERE product_id = p_product;
+        RAISE EXCEPTION 'BR-13：商品「%」在此期間已有特殊活動折扣 %，期間不得重疊', v_name, v_conflict;
+    END IF;
+END $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION trg_product_discount_check() RETURNS trigger AS $$
+DECLARE v_type TEXT; v_start DATE; v_end DATE;
+BEGIN
+    SELECT discount_type, start_date, end_date INTO v_type, v_start, v_end
+    FROM discount WHERE discount_code = NEW.discount_code FOR SHARE;
+    IF v_type IS DISTINCT FROM 'special_event' THEN
+        RAISE EXCEPTION 'BR-13：只有特殊活動折扣可以指定適用商品（% 是 %）', NEW.discount_code, v_type;
+    END IF;
+    PERFORM fn_check_event_overlap(NEW.product_id, NEW.discount_code, v_start, v_end);
+    RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER product_discount_check BEFORE INSERT OR UPDATE ON product_discount
+    FOR EACH ROW EXECUTE FUNCTION trg_product_discount_check();
+
+-- 修改折扣期間時，對這個折扣套用的每一項商品重新檢查重疊
+CREATE OR REPLACE FUNCTION trg_discount_period_check() RETURNS trigger AS $$
+DECLARE r RECORD;
+BEGIN
+    IF NEW.start_date = OLD.start_date AND NEW.end_date = OLD.end_date THEN
+        RETURN NEW;
+    END IF;
+    FOR r IN SELECT product_id FROM product_discount WHERE discount_code = NEW.discount_code ORDER BY product_id LOOP
+        PERFORM fn_check_event_overlap(r.product_id, NEW.discount_code, NEW.start_date, NEW.end_date);
+    END LOOP;
+    RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER discount_period_check BEFORE UPDATE OF start_date, end_date ON discount
+    FOR EACH ROW EXECUTE FUNCTION trg_discount_period_check();
 
 -- ---------- 至少保留一位啟用中的平台管理員 ----------
 CREATE OR REPLACE FUNCTION trg_keep_one_admin() RETURNS trigger AS $$

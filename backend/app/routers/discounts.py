@@ -151,10 +151,11 @@ def validate_discount_rules(
         for prod in matched_products:
             conflict_stmt = (
                 select(ProductDiscount)
+                .join(Discount, Discount.discount_code == ProductDiscount.discount_code)
                 .where(
                     ProductDiscount.product_id == prod.product_id,
-                    ProductDiscount.start_date <= end_date,
-                    ProductDiscount.end_date >= start_date,
+                    Discount.start_date <= end_date,
+                    Discount.end_date >= start_date,
                 )
             )
             if exclude_code is not None:
@@ -260,13 +261,7 @@ def create_discount(
 
     if body.discount_type == "special_event" and pids:
         for pid in pids:
-            pd = ProductDiscount(
-                product_id=pid,
-                discount_code=discount_code,
-                discount_type="special_event",
-                start_date=body.start_date,
-                end_date=body.end_date,
-            )
+            pd = ProductDiscount(product_id=pid, discount_code=discount_code)
             db.add(pd)
         db.flush()
 
@@ -353,13 +348,7 @@ def update_discount(
 
         existing_pids = {pd.product_id for pd in discount.products}
         for pid in target_pids - existing_pids:
-            pd = ProductDiscount(
-                product_id=pid,
-                discount_code=code,
-                discount_type="special_event",
-                start_date=merged_start,
-                end_date=merged_end,
-            )
+            pd = ProductDiscount(product_id=pid, discount_code=code)
             discount.products.append(pd)
 
     db.commit()

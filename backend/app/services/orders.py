@@ -123,7 +123,7 @@ def create_return(db: Session, order: Order, reason: str, items: list[tuple[int,
     db.add(rr)
     db.flush()
     for item_no, qty in items:
-        rr.items.append(ReturnItem(return_id=rr.return_id, order_id=order.order_id, item_no=item_no, return_qty=qty))
+        rr.items.append(ReturnItem(order_id=order.order_id, item_no=item_no, return_qty=qty))
     db.flush()
     db.expire(order, ["return_request"])
     return rr

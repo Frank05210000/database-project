@@ -1,4 +1,4 @@
-"""把資料庫拒絕（CHECK、UNIQUE、EXCLUDE、trigger 的 RAISE）轉成 HTTP 409 與可讀訊息。"""
+"""把資料庫拒絕（CHECK、UNIQUE、外鍵、trigger 的 RAISE）轉成 HTTP 409 與可讀訊息。"""
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import DBAPIError
@@ -9,7 +9,7 @@ CONSTRAINT_MESSAGES = {
     "product_stock_check": "BR-06：庫存不得為負數",
     "cart_item_quantity_check": "BR-05：數量必須是大於 0 的整數",
     "order_item_quantity_check": "BR-05：數量必須是大於 0 的整數",
-    "product_discount_product_id_daterange_excl": "BR-13：同一商品的特殊活動折扣期間不得重疊",
+    "return_item_order_id_item_no_fkey": "BR-25：只能退這張訂單裡的商品",
     "return_request_order_id_key": "BR-25：每筆訂單只能提出一次退貨申請",
     "discount_check": "BR-14：開始日期須小於或等於結束日期",
     "discount_rate_check": "BR-15：折扣率須介於 0 與 1 之間",
