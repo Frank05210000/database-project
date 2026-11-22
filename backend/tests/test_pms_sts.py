@@ -172,6 +172,26 @@ def test_store_update_admin_only(client, admin_h, staff_h):
     assert client.get("/api/products/1").json()["store_name"] == "FUWA 新店名"
 
 
+def test_store_create_admin_only(client, admin_h, staff_h, alice_h):
+    body = {"name": "FUWA 新竹店", "address": "新竹市東區", "email": "hsinchu@fuwafuwa.tw", "phone": "03-1234"}
+    assert client.post("/api/stores/", json=body).status_code == 401
+    assert client.post("/api/stores/", headers=staff_h, json=body).status_code == 403
+    assert client.post("/api/stores/", headers=alice_h, json=body).status_code == 403
+    assert client.post("/api/stores/", headers=admin_h, json={**body, "email": "bad"}).status_code == 422
+    assert client.post("/api/stores/", headers=admin_h, json={**body, "name": ""}).status_code == 422
+    r = client.post("/api/stores/", headers=admin_h, json=body)
+    assert r.status_code == 201
+    s = r.json()
+    assert s["store_id"] == 4 and s["name"] == "FUWA 新竹店" and s["product_count"] == 0 and s["avg_rating"] is None
+    assert [x["store_id"] for x in client.get("/api/stores/").json()] == [1, 2, 3, 4]
+    # 新商店可以馬上由工作人員上架商品
+    p = client.post("/api/products/", headers=staff_h, json={
+        "store_id": 4, "name": "新竹限定貓抓板", "description": "x", "category": "貓咪用品",
+        "image_url": None, "price": 199, "stock": 5})
+    assert p.status_code == 201, p.text
+    assert client.get("/api/stores/4").json()["product_count"] == 1
+
+
 def test_review_rules_br24(client, alice_h, bob_h, db):
     open_order = make_order(db, 4, [(1, 1)])                      # received
     r = client.post("/api/stores/1/reviews", headers=alice_h, json={"order_id": open_order, "rating": 5})

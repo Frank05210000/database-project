@@ -93,6 +93,7 @@ Phase 4 依課本正規化到 3NF，相對 Phase 2 的 schema 做了兩處拆分
 ### STS `/api/stores`
 - `GET /` → `Store[]`，`Store = {store_id,name,address,email,phone,product_count,avg_rating,review_count}`
 - `GET /{id}` → `Store & {products: Product[], reviews: Review[]}`
+- `POST /`（admin）`{name,address,email,phone}` → 201 `Store`（新增商店，SRS 未列，屬擴充）
 - `PUT /{id}`（admin）`{name,address,email,phone}`
 - `POST /{id}/reviews`（customer）`{order_id,rating,comment?}`；`Review = {order_id,store_id,rating,comment,reviewed_at,customer_name}`
 

@@ -1,6 +1,6 @@
-// STS：平台管理員檢視與修改商店資料
+// STS：平台管理員檢視、新增與修改商店資料
 import { useState } from 'react';
-import { get, put } from '../../api/client';
+import { get, post, put } from '../../api/client';
 import type { Store } from '../../api/types';
 import { Card, Empty, ErrorAlert, Field, Loading, Modal, PageHeader, useLoad, useToast } from '../../components/Backoffice';
 
@@ -9,7 +9,7 @@ interface StoreForm { name: string; address: string; email: string; phone: strin
 export default function StoresPage() {
   const toast = useToast();
   const stores = useLoad(() => get<Store[]>('/stores/'), []);
-  const [editing, setEditing] = useState<{ id: number; form: StoreForm } | null>(null);
+  const [editing, setEditing] = useState<{ id: number | null; form: StoreForm } | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
 
@@ -18,8 +18,10 @@ export default function StoresPage() {
     setBusy(true);
     setError(null);
     try {
-      const s = await put<Store>(`/stores/${editing.id}`, editing.form);
-      toast.success(`商店「${s.name}」已更新`);
+      const s = editing.id == null
+        ? await post<Store>('/stores/', editing.form)
+        : await put<Store>(`/stores/${editing.id}`, editing.form);
+      toast.success(editing.id == null ? `已新增商店「${s.name}」` : `商店「${s.name}」已更新`);
       setEditing(null);
       stores.reload();
     } catch (e) {
@@ -34,7 +36,11 @@ export default function StoresPage() {
 
   return (
     <>
-      <PageHeader title="商店資料" subtitle="檢視各商店與評價，修改聯絡資訊" />
+      <PageHeader
+        title="商店資料"
+        subtitle="新增商店，檢視各商店與評價，修改聯絡資訊"
+        actions={<button className="bo-btn" onClick={() => { setError(null); setEditing({ id: null, form: { name: '', address: '', email: '', phone: '' } }); }}>＋ 新增商店</button>}
+      />
       <Card>
         <ErrorAlert error={stores.error} />
         {stores.loading && !stores.data ? <Loading /> : !stores.data || stores.data.length === 0 ? <Empty>沒有商店</Empty> : (
@@ -64,13 +70,13 @@ export default function StoresPage() {
 
       {editing && (
         <Modal
-          title={`編輯商店 #${editing.id}`}
+          title={editing.id == null ? '新增商店' : `編輯商店 #${editing.id}`}
           onClose={() => setEditing(null)}
           onSubmit={save}
           footer={
             <>
               <button type="button" className="bo-btn bo-btn--ghost" onClick={() => setEditing(null)}>取消</button>
-              <button type="submit" className="bo-btn" disabled={busy}>儲存</button>
+              <button type="submit" className="bo-btn" disabled={busy}>{editing.id == null ? '新增' : '儲存'}</button>
             </>
           }
         >

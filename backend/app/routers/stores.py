@@ -73,6 +73,16 @@ def get_store(store_id: int, db: Session = Depends(get_db)):
     return out
 
 
+@router.post("/", status_code=status.HTTP_201_CREATED)
+def create_store(body: StoreIn, db: Session = Depends(get_db), _: User = Depends(require_admin)):
+    """平台管理員新增商店（擴充 STS-F-002：SRS 只寫到修改，新增是為了讓平台能擴充門市）。"""
+    s = Store(name=body.name, address=body.address, email=body.email, phone=body.phone)
+    db.add(s)
+    db.commit()
+    db.refresh(s)
+    return store_out(s, (0, None, 0))
+
+
 @router.put("/{store_id}")
 def update_store(store_id: int, body: StoreIn, db: Session = Depends(get_db), _: User = Depends(require_admin)):
     s = get_store_or_404(db, store_id)
