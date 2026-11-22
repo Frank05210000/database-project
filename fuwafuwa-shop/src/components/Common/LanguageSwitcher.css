@@ -5,6 +5,8 @@
   border-radius: var(--border-radius-small);
   padding: 4px;
   border: 2px solid var(--color-accent-orange);
+  flex-shrink: 0;
+  width: fit-content;
 }
 
 .language-switcher__btn {
@@ -18,6 +20,11 @@
   cursor: pointer;
   transition: all 0.2s;
   min-width: 45px;
+  min-height: 36px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .language-switcher__btn:hover {
@@ -27,4 +34,11 @@
 .language-switcher__btn.active {
   background-color: var(--color-accent-orange);
   color: var(--color-white);
+}
+
+@media (max-width: 899px) {
+  .language-switcher__btn {
+    min-height: 40px;
+    padding: 8px 16px;
+  }
 }

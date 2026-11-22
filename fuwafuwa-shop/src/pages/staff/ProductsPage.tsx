@@ -5,6 +5,7 @@ import type { Product, ProductInput, Store } from '../../api/types';
 import {
   Alert, Badge, Card, ConfirmModal, Empty, ErrorAlert, Field, Loading, Modal, PageHeader, useLoad, useToast,
 } from '../../components/Backoffice';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const CATEGORY_LABEL: Record<string, string> = {
   food: '食品', toy: '玩具', accessory: '配件', care: '清潔保養', home: '居家',
@@ -19,13 +20,16 @@ const emptyForm = (storeId: number): ProductInput => ({
 
 export default function ProductsPage() {
   const toast = useToast();
+  const { user } = useAuth();
+  const myStore = user?.store_id ?? null;   // 店員只能管理自己商店的商品；null 為總部
   const [q, setQ] = useState('');
   const [qApplied, setQApplied] = useState('');
-  const [storeId, setStoreId] = useState('');
+  const [storeId, setStoreId] = useState(myStore ? String(myStore) : '');
   const [category, setCategory] = useState('');
   const [listed, setListed] = useState<'all' | 'listed' | 'unlisted'>('all');
 
-  const stores = useLoad(() => get<Store[]>('/stores/'), []);
+  const allStores = useLoad(() => get<Store[]>('/stores/'), []);
+  const stores = { ...allStores, data: allStores.data?.filter((s) => myStore == null || s.store_id === myStore) };
   const products = useLoad(
     () => get<Product[]>('/products/', { q: qApplied, store_id: storeId, category, include_unlisted: true }),
     [qApplied, storeId, category],
@@ -77,7 +81,7 @@ export default function ProductsPage() {
       }
       setEditing(null);
       products.reload();
-      stores.reload();
+      allStores.reload();
     } catch (e) {
       setFormError(e);
       toast.error(e);

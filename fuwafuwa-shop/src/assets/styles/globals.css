@@ -42,6 +42,8 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
+  width: 100%;
+  max-width: 100vw;
 }
 
 body.product-detail-body {
@@ -50,16 +52,21 @@ body.product-detail-body {
 
 html {
   height: auto;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   margin: 0;
   padding: 0;
+  width: 100%;
+  max-width: 100vw;
 }
 
 #root {
   width: 100%;
+  max-width: 100vw;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 /* Cute rounded button style */

@@ -13,6 +13,9 @@ export interface User {
   phone: string | null;
   is_active: boolean;
   roles: Role[];
+  /** 工作人員隸屬的商店；null 表示總部工作人員（或不是工作人員） */
+  store_id?: number | null;
+  store_name?: string | null;
   created_at: string;
 }
 

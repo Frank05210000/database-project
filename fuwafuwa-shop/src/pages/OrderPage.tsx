@@ -93,37 +93,39 @@ const OrderPage: React.FC = () => {
         <form onSubmit={handleSubmit}>
           <section className="order-section">
             <h2>{t.checkout.items}</h2>
-            <table className="fw-table">
-              <thead>
-                <tr>
-                  <th>商品</th>
-                  <th>單價</th>
-                  <th>數量</th>
-                  <th>小計</th>
-                  <th>活動折扣</th>
-                  <th>折後</th>
-                </tr>
-              </thead>
-              <tbody>
-                {quote.lines.map((l) => (
-                  <tr key={l.product_id}>
-                    <td>
-                      {l.product_name}
-                      {l.event_code && (
-                        <div className="fw-muted">
-                          <span className="fw-event-badge">{l.event_code}</span> {l.event_description}
-                        </div>
-                      )}
-                    </td>
-                    <td>{formatMoney(l.unit_price)}</td>
-                    <td>{l.quantity}</td>
-                    <td>{formatMoney(l.line_subtotal)}</td>
-                    <td>{l.event_discount > 0 ? `− ${formatMoney(l.event_discount)}` : '—'}</td>
-                    <td>{formatMoney(l.net_amount)}</td>
+            <div className="bo-table-wrap">
+              <table className="fw-table">
+                <thead>
+                  <tr>
+                    <th>商品</th>
+                    <th>單價</th>
+                    <th>數量</th>
+                    <th>小計</th>
+                    <th>活動折扣</th>
+                    <th>折後</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {quote.lines.map((l) => (
+                    <tr key={l.product_id}>
+                      <td>
+                        {l.product_name}
+                        {l.event_code && (
+                          <div className="fw-muted">
+                            <span className="fw-event-badge">{l.event_code}</span> {l.event_description}
+                          </div>
+                        )}
+                      </td>
+                      <td>{formatMoney(l.unit_price)}</td>
+                      <td>{l.quantity}</td>
+                      <td>{formatMoney(l.line_subtotal)}</td>
+                      <td>{l.event_discount > 0 ? `− ${formatMoney(l.event_discount)}` : '—'}</td>
+                      <td>{formatMoney(l.net_amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
 
           <section className="order-section">

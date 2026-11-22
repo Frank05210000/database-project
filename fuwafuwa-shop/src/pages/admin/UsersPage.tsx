@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { formatDateTime, get, patch, post, put, ROLE_LABEL } from '../../api/client';
-import type { Role, User } from '../../api/types';
+import type { Role, Store, User } from '../../api/types';
 import {
   Alert, Badge, Card, ConfirmModal, Empty, ErrorAlert, Field, Loading, Modal, PageHeader, RoleChip, useLoad, useToast,
 } from '../../components/Backoffice';
@@ -45,7 +45,8 @@ export default function UsersPage() {
 
   const [creating, setCreating] = useState<UserForm | null>(null);
   const [editing, setEditing] = useState<{ user: User; form: UserForm } | null>(null);
-  const [rolesFor, setRolesFor] = useState<{ user: User; roles: Role[] } | null>(null);
+  const [rolesFor, setRolesFor] = useState<{ user: User; roles: Role[]; storeId: number | null } | null>(null);
+  const stores = useLoad(() => get<Store[]>('/stores/'), []);
   const [toggling, setToggling] = useState<User | null>(null);
   const [modalError, setModalError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
@@ -95,7 +96,10 @@ export default function UsersPage() {
 
   const submitRoles = () => run(async () => {
     if (!rolesFor) return;
-    const u = await put<User>(`/admin/users/${rolesFor.user.user_id}/roles`, { roles: rolesFor.roles });
+    let u = await put<User>(`/admin/users/${rolesFor.user.user_id}/roles`, { roles: rolesFor.roles });
+    if (rolesFor.roles.includes('staff') && (u.store_id ?? null) !== rolesFor.storeId) {
+      u = await put<User>(`/admin/users/${rolesFor.user.user_id}/store`, { store_id: rolesFor.storeId });
+    }
     toast.success(`${u.loginid} 的角色已更新為：${u.roles.map((r) => ROLE_LABEL[r]).join('、')}`);
     setRolesFor(null);
     await afterChange(u);
@@ -146,7 +150,7 @@ export default function UsersPage() {
           <div className="bo-table-wrap">
             <table className="bo-table">
               <thead>
-                <tr><th>帳號</th><th>姓名</th><th>Email</th><th>角色</th><th>狀態</th><th>建立時間</th><th>操作</th></tr>
+                <tr><th>帳號</th><th>姓名</th><th>Email</th><th>角色</th><th>所屬商店</th><th>狀態</th><th>建立時間</th><th>操作</th></tr>
               </thead>
               <tbody>
                 {users.data.map((u) => (
@@ -155,6 +159,7 @@ export default function UsersPage() {
                     <td style={{ whiteSpace: 'nowrap' }}>{u.name}</td>
                     <td>{u.email}</td>
                     <td><div className="bo-chips">{u.roles.map((r) => <RoleChip key={r} role={r} />)}</div></td>
+                    <td style={{ whiteSpace: 'nowrap' }}>{u.roles.includes('staff') ? (u.store_name ?? '總部') : <span className="bo-muted">—</span>}</td>
                     <td>{u.is_active ? <Badge tone="green">啟用</Badge> : <Badge tone="red">停用</Badge>}</td>
                     <td style={{ whiteSpace: 'nowrap' }}>{formatDateTime(u.created_at)}</td>
                     <td>
@@ -163,7 +168,7 @@ export default function UsersPage() {
                           setModalError(null);
                           setEditing({ user: u, form: { loginid: u.loginid, name: u.name, password: '', email: u.email, address: u.address ?? '', phone: u.phone ?? '', roles: u.roles } });
                         }}>編輯</button>
-                        <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={() => { setModalError(null); setRolesFor({ user: u, roles: [...u.roles] }); }}>角色</button>
+                        <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={() => { setModalError(null); setRolesFor({ user: u, roles: [...u.roles], storeId: u.store_id ?? null }); }}>角色</button>
                         <button className={`bo-btn bo-btn--sm ${u.is_active ? 'bo-btn--danger' : 'bo-btn--success'}`} onClick={() => { setModalError(null); setToggling(u); }}>
                           {u.is_active ? '停用' : '啟用'}
                         </button>
@@ -250,9 +255,18 @@ export default function UsersPage() {
           <ErrorAlert error={modalError} />
           <p style={{ marginTop: 0 }}>勾選要指派給 <b>{rolesFor.user.name}</b> 的角色（整組取代，至少保留一個）：</p>
           <RoleChecks value={rolesFor.roles} onChange={(roles) => setRolesFor({ ...rolesFor, roles })} />
+          {rolesFor.roles.includes('staff') && (
+            <Field label="所屬商店（工作人員）">
+              <select className="bo-select" value={rolesFor.storeId ?? ''}
+                onChange={(e) => setRolesFor({ ...rolesFor, storeId: e.target.value ? Number(e.target.value) : null })}>
+                <option value="">總部（可管理所有商店）</option>
+                {stores.data?.map((st) => <option key={st.store_id} value={st.store_id}>{st.name}</option>)}
+              </select>
+            </Field>
+          )}
           <ul className="bo-muted" style={{ fontSize: 12, paddingLeft: 18, marginBottom: 0 }}>
             <li>顧客：購物、下單、申請退貨</li>
-            <li>工作人員：管理商品、訂單、退貨、折扣與報表</li>
+            <li>工作人員：管理商品、訂單、退貨、折扣與報表；指定商店後只能管理該店（運費與季節性折扣由總部管理）</li>
             <li>平台管理員：管理使用者帳號與角色</li>
           </ul>
           {isMe(rolesFor.user) && !rolesFor.roles.includes('admin') && (

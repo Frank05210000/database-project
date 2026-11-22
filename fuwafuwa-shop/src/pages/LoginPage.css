@@ -353,3 +353,14 @@
 .login-demo__item:hover code {
   text-decoration: underline;
 }
+
+@media (max-width: 480px) {
+  .login-page {
+    padding: 12px;
+  }
+
+  .login-card {
+    padding: 24px 16px;
+    border-radius: 16px;
+  }
+}

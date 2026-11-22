@@ -269,3 +269,34 @@
   width: 120px;
   height: auto;
 }
+
+@media (max-width: 640px) {
+  .cart-page__items {
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+
+  .cart-page__item {
+    padding: var(--spacing-sm);
+    border-right-width: 36px;
+    gap: var(--spacing-sm);
+  }
+
+  .cart-page__item-name {
+    font-size: 18px;
+  }
+
+  .cart-page__item-price {
+    font-size: 16px;
+  }
+
+  .cart-page__item-total {
+    font-size: 15px;
+    width: 80px;
+    padding: 2px 6px;
+  }
+
+  .cart-page__item-remove {
+    right: -36px;
+    width: 36px;
+  }
+}

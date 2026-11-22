@@ -1,6 +1,7 @@
 .product-detail {
-  max-width: 800px;
-  max-height: 50px;
+  max-width: 900px;
+  width: 100%;
+  box-sizing: border-box;
   margin: 0 auto;
   padding: var(--spacing-md);
   padding-bottom: 150px;
@@ -285,5 +286,45 @@
 }
 
 body.product-detail-body {
-  padding-bottom: 550px;
+  padding-bottom: 200px;
+}
+
+@media (max-width: 640px) {
+  .product-detail {
+    padding: var(--spacing-sm);
+    padding-bottom: 120px;
+  }
+
+  .product-detail__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .product-detail__title {
+    font-size: 20px;
+  }
+
+  .product-detail__price {
+    font-size: 24px;
+  }
+
+  .product-detail__footer {
+    height: 54px;
+    padding: 8px 12px;
+  }
+
+  .product-detail__buy-btn {
+    height: 80px;
+    margin-bottom: 25px;
+  }
+
+  .product-detail__dog-heart {
+    margin-bottom: 40px;
+  }
+
+  .product-detail__dog-heart img {
+    max-width: 120px;
+    max-height: 90px;
+  }
 }

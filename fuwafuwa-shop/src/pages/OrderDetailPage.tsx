@@ -53,41 +53,43 @@ const ReturnForm: React.FC<{ order: Order; onDone: () => void }> = ({ order, onD
 
   return (
     <form onSubmit={submit}>
-      <table className="fw-table">
-        <thead>
-          <tr>
-            <th>商品</th>
-            <th>單價</th>
-            <th>購買數量</th>
-            <th>退貨數量</th>
-          </tr>
-        </thead>
-        <tbody>
-          {order.items.map((it) => (
-            <tr key={it.item_no}>
-              <td>{it.product_name}</td>
-              <td>{formatMoney(it.unit_price)}</td>
-              <td>{it.quantity}</td>
-              <td>
-                <input
-                  className="fw-input"
-                  type="number"
-                  min={0}
-                  max={it.quantity}
-                  style={{ width: 80 }}
-                  value={qty[it.item_no] ?? 0}
-                  onChange={(e) =>
-                    setQty({
-                      ...qty,
-                      [it.item_no]: Math.max(0, Math.min(it.quantity, Math.floor(Number(e.target.value)) || 0)),
-                    })
-                  }
-                />
-              </td>
+      <div className="bo-table-wrap">
+        <table className="fw-table">
+          <thead>
+            <tr>
+              <th>商品</th>
+              <th>單價</th>
+              <th>購買數量</th>
+              <th>退貨數量</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {order.items.map((it) => (
+              <tr key={it.item_no}>
+                <td>{it.product_name}</td>
+                <td>{formatMoney(it.unit_price)}</td>
+                <td>{it.quantity}</td>
+                <td>
+                  <input
+                    className="fw-input"
+                    type="number"
+                    min={0}
+                    max={it.quantity}
+                    style={{ width: 80 }}
+                    value={qty[it.item_no] ?? 0}
+                    onChange={(e) =>
+                      setQty({
+                        ...qty,
+                        [it.item_no]: Math.max(0, Math.min(it.quantity, Math.floor(Number(e.target.value)) || 0)),
+                      })
+                    }
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <label style={{ display: 'block', marginTop: 12, fontWeight: 600 }}>
         退貨原因 *
         <textarea
@@ -347,28 +349,30 @@ const OrderDetailPage: React.FC = () => {
             </h2>
             <p>申請時間：{formatDateTime(ret.requested_at)}</p>
             <p>退貨原因：{ret.reason}</p>
-            <table className="fw-table" style={{ margin: '8px 0' }}>
-              <thead>
-                <tr>
-                  <th>商品</th>
-                  <th>單價</th>
-                  <th>購買</th>
-                  <th>退貨</th>
-                  <th>退款</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ret.items.map((it) => (
-                  <tr key={it.item_no}>
-                    <td>{it.product_name}</td>
-                    <td>{formatMoney(it.unit_price)}</td>
-                    <td>{it.quantity}</td>
-                    <td>{it.return_qty}</td>
-                    <td>{it.refund_amount != null ? formatMoney(it.refund_amount) : '—'}</td>
+            <div className="bo-table-wrap">
+              <table className="fw-table" style={{ margin: '8px 0' }}>
+                <thead>
+                  <tr>
+                    <th>商品</th>
+                    <th>單價</th>
+                    <th>購買</th>
+                    <th>退貨</th>
+                    <th>退款</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {ret.items.map((it) => (
+                    <tr key={it.item_no}>
+                      <td>{it.product_name}</td>
+                      <td>{formatMoney(it.unit_price)}</td>
+                      <td>{it.quantity}</td>
+                      <td>{it.return_qty}</td>
+                      <td>{it.refund_amount != null ? formatMoney(it.refund_amount) : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             {ret.status === 'approved' && (
               <div className="fw-success">
                 已核准，退款金額 {formatMoney(ret.refund_total)}（{ret.processed_by_name}・
